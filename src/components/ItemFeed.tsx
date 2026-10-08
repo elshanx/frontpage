@@ -5,6 +5,7 @@ import { checkNewItems, loadItems, loadNewItems } from '@/app/app/actions';
 import ItemRow from '@/components/ItemRow';
 import { REFRESHED_EVENT } from '@/components/RefreshButton';
 import type { ListedItem } from '@/lib/items';
+import type { Layout } from '@/lib/reading/layout';
 
 const FOCUS_CHECK_MS = 60_000;
 
@@ -16,11 +17,13 @@ export default function ItemFeed({
   search,
   now,
   refreshMinutes,
+  layout,
 }: {
   initial: { items: ListedItem[]; nextCursor: string | null; fetchedAt: number };
   search: string;
   now: number;
   refreshMinutes: number;
+  layout: Layout;
 }) {
   const [items, setItems] = useState(initial.items);
   const [cursor, setCursor] = useState(initial.nextCursor);
@@ -118,9 +121,15 @@ export default function ItemFeed({
         )}
         <span className='sr-only'>{announcement}</span>
       </div>
-      <ul className='[overflow-anchor:none]'>
+      <ul
+        className={
+          layout === 'cards'
+            ? 'mt-4 grid gap-4 [overflow-anchor:none] sm:grid-cols-2 lg:grid-cols-3'
+            : '[overflow-anchor:none]'
+        }
+      >
         {items.map((item) => (
-          <ItemRow key={item.id} item={item} search={search} now={now} />
+          <ItemRow key={item.id} item={item} search={search} now={now} layout={layout} />
         ))}
       </ul>
       {cursor ? (

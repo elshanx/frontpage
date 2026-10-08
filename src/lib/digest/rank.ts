@@ -37,7 +37,11 @@ export default function rankDigest<T extends DigestCandidate>(
   };
   const ranked = [...items].sort((a, b) => score(b) - score(a) || newest(a, b));
 
-  interface Group { items: T[]; total: number; perFeed: Map<string, number> }
+  interface Group {
+    items: T[];
+    total: number;
+    perFeed: Map<string, number>;
+  }
   const groups = new Map<string | null, Group>();
   ranked.forEach((candidate) => {
     const group: Group = groups.get(candidate.categoryId) ?? {

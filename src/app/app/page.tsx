@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import ItemList from '@/components/ItemList';
 import ItemListSkeleton from '@/components/ItemListSkeleton';
+import LayoutSwitcher from '@/components/LayoutSwitcher';
 import MarkAllRead from '@/components/MarkAllRead';
 import { ReadStateProvider } from '@/components/ReadState';
 import RefreshButton from '@/components/RefreshButton';
@@ -62,6 +63,7 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
                 </Link>
               ))}
             </nav>
+            <LayoutSwitcher layout={layout} />
             <RefreshButton search={search} {...freshness} />
             <MarkAllRead
               search={search}
@@ -70,7 +72,12 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
           </div>
         </div>
         <Suspense key={search} fallback={<ItemListSkeleton />}>
-          <ItemList userId={user.id} filter={filter} refreshMinutes={refreshMinutes} />
+          <ItemList
+            userId={user.id}
+            filter={filter}
+            refreshMinutes={refreshMinutes}
+            layout={layout}
+          />
         </Suspense>
       </ReadStateProvider>
     </main>

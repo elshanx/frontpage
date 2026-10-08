@@ -65,7 +65,7 @@ export default async function SavedPage({ searchParams }: PageProps<'/app/saved'
         <ReadStateProvider>
           <ul>
             {items.map((item) => (
-              <ItemRow key={item.id} item={item} search='' now={now} />
+              <ItemRow key={item.id} item={item} search='' now={now} layout='comfortable' />
             ))}
           </ul>
         </ReadStateProvider>

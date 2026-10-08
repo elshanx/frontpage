@@ -4,6 +4,7 @@ import { setTimeout } from 'node:timers/promises';
 import ItemFeed from '@/components/ItemFeed';
 import { feedsToRefresh, listItems } from '@/lib/items';
 import { type ListFilter, filterToSearch } from '@/lib/reading/filters';
+import type { Layout } from '@/lib/reading/layout';
 import { refreshFeeds } from '@/lib/refresh';
 
 const INITIAL_WAIT_MS = 8_000;
@@ -12,10 +13,12 @@ export default async function ItemList({
   userId,
   filter,
   refreshMinutes,
+  layout,
 }: {
   userId: string;
   filter: ListFilter;
   refreshMinutes: number;
+  layout: Layout;
 }) {
   const { neverFetched, due } = await feedsToRefresh(userId);
   const initialRefresh = refreshFeeds(neverFetched);
@@ -43,6 +46,12 @@ export default async function ItemList({
   }
 
   return (
-    <ItemFeed initial={page} search={search} now={page.fetchedAt} refreshMinutes={refreshMinutes} />
+    <ItemFeed
+      initial={page}
+      search={search}
+      now={page.fetchedAt}
+      refreshMinutes={refreshMinutes}
+      layout={layout}
+    />
   );
 }
