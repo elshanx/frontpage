@@ -18,6 +18,7 @@ export default function GuestButton() {
         return;
       }
       router.push('/app');
+      router.refresh();
     });
 
   return (
