@@ -77,3 +77,73 @@
     }
   }
 }
+
+@layer components {
+  .reader-content {
+    @apply font-serif text-lg leading-[1.7] break-words;
+
+    & > * + * {
+      @apply mt-5;
+    }
+
+    & h2 {
+      @apply mt-10 font-sans text-xl font-semibold;
+    }
+
+    & :is(h3, h4, h5, h6) {
+      @apply mt-8 font-sans text-lg font-semibold;
+    }
+
+    & a {
+      @apply text-accent underline;
+    }
+
+    & :is(img, video, picture, iframe) {
+      @apply h-auto max-w-full rounded-md;
+    }
+
+    & :is(ul, ol) {
+      @apply pl-6;
+    }
+
+    & ul {
+      @apply list-disc;
+    }
+
+    & ol {
+      @apply list-decimal;
+    }
+
+    & li + li {
+      @apply mt-2;
+    }
+
+    & blockquote {
+      @apply border-l-4 border-border pl-4 text-text-secondary italic;
+    }
+
+    & pre {
+      @apply overflow-x-auto rounded-md bg-bg-tertiary p-4 text-sm leading-normal;
+    }
+
+    & code {
+      @apply font-mono text-[0.9em];
+    }
+
+    & table {
+      @apply block max-w-full overflow-x-auto text-base;
+    }
+
+    & :is(th, td) {
+      @apply border border-border px-3 py-2 text-left;
+    }
+
+    & figcaption {
+      @apply mt-2 font-sans text-sm text-text-tertiary;
+    }
+
+    & hr {
+      @apply border-border;
+    }
+  }
+}
