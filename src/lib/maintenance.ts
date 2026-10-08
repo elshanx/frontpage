@@ -35,3 +35,12 @@ export function purgeOldItems(now: Date) {
       AND NOT EXISTS (
         SELECT 1 FROM "ItemState" st WHERE st."itemId" = i.id AND st."savedAt" IS NOT NULL)`;
 }
+
+export async function purgeAiBookkeeping(now: Date) {
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 3_600_000);
+  const [briefings, usage] = await Promise.all([
+    prisma.digestBriefing.deleteMany({ where: { createdAt: { lt: weekAgo } } }),
+    prisma.aiUsage.deleteMany({ where: { day: { lt: weekAgo } } }),
+  ]);
+  return briefings.count + usage.count;
+}

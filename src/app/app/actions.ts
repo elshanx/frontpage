@@ -2,8 +2,10 @@
 
 import { refresh } from 'next/cache';
 import { after } from 'next/server';
+import { findBriefing, saveBriefing } from '@/lib/ai/briefing';
 import { generate } from '@/lib/ai/client';
 import type { AiOutcome } from '@/lib/ai/outcome';
+import { loadDigest, parseDigestWindow } from '@/lib/digest-data';
 import { toPlainText } from '@/lib/feeds/html';
 import {
   countNewItems,
@@ -136,5 +138,26 @@ export async function summarizeItemAction(itemId: string): Promise<AiOutcome> {
   if (!article) return { status: 'unavailable' };
   const outcome = await generate(user, SUMMARY_PROMPT, `Title: ${item.title}\n\n${article}`);
   if (outcome.status === 'ok') await saveSummary(item.id, outcome.text);
+  return outcome;
+}
+
+const BRIEFING_PROMPT =
+  'You write a short "what happened" briefing for a tech reader. Given headlines and excerpts, write one plain-text paragraph of 3 to 5 sentences that connects the main themes. No preamble, no lists, no headings. Only use what the items say.';
+const BRIEFING_ITEMS = 20;
+
+export async function briefDigestAction(window: string): Promise<AiOutcome> {
+  const user = await requireUser();
+  const { shown, windowKey } = await loadDigest(user.id, parseDigestWindow(window));
+  if (!shown.length) return { status: 'unavailable' };
+  const cached = await findBriefing(user.id, windowKey);
+  if (cached) return { status: 'ok', text: cached };
+  const input = shown
+    .slice(0, BRIEFING_ITEMS)
+    .map(
+      ({ title, feedTitle, excerpt }) => `- ${title} (${feedTitle})${excerpt ? `: ${excerpt}` : ''}`
+    )
+    .join('\n');
+  const outcome = await generate(user, BRIEFING_PROMPT, input);
+  if (outcome.status === 'ok') await saveBriefing(user.id, windowKey, outcome.text);
   return outcome;
 }

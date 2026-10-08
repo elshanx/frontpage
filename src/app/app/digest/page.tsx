@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { briefDigestAction } from '@/app/app/actions';
+import AiPanel from '@/components/AiPanel';
 import DigestDone from '@/components/DigestDone';
 import ItemRow from '@/components/ItemRow';
 import { ReadStateProvider } from '@/components/ReadState';
-import rankDigest, { type DigestWindow, digestWindowStart } from '@/lib/digest/rank';
-import prisma from '@/lib/db';
-import { listDigestItems, weeklyCounts } from '@/lib/items';
-import { getPreferences } from '@/lib/preferences';
+import { aiEnabled } from '@/lib/ai/client';
+import { findBriefing } from '@/lib/ai/briefing';
+import { loadDigest, parseDigestWindow } from '@/lib/digest-data';
+import type { DigestWindow } from '@/lib/digest/rank';
 import { filterToSearch } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
 
@@ -20,21 +22,16 @@ const WINDOWS: { value: DigestWindow; label: string }[] = [
 
 export default async function DigestPage({ searchParams }: PageProps<'/app/digest'>) {
   const [user, params] = await Promise.all([requireUser(), searchParams]);
-  const window = WINDOWS.find(({ value }) => value === params.window)?.value ?? 'since';
-  const now = new Date();
-  const { digestSeenAt, layout } = await getPreferences(user.id);
-  const [items, counts, categories] = await Promise.all([
-    listDigestItems(user.id, digestWindowStart(window, digestSeenAt, now)),
-    weeklyCounts(user.id, now),
-    prisma.category.findMany({ where: { userId: user.id }, select: { id: true, name: true } }),
-  ]);
-  const digest = rankDigest(
-    items.map((item) => ({ ...item, publishedAt: new Date(item.publishedAt) })),
-    counts,
-    now
-  );
-  const names = new Map(categories.map(({ id, name }) => [id, name]));
-  const shown = digest.kind === 'quiet' ? digest.items : digest.groups.flatMap((g) => g.items);
+  const window = parseDigestWindow(params.window);
+  const {
+    now,
+    layout,
+    digest,
+    shown,
+    categoryNames: names,
+    windowKey,
+  } = await loadDigest(user.id, window);
+  const briefing = aiEnabled && shown.length ? await findBriefing(user.id, windowKey) : null;
   const row = (item: (typeof shown)[number]) => (
     <ItemRow
       key={item.id}
@@ -60,6 +57,16 @@ export default async function DigestPage({ searchParams }: PageProps<'/app/diges
           </Link>
         ))}
       </nav>
+      {aiEnabled && shown.length > 0 && (
+        <AiPanel
+          key={windowKey}
+          title='AI briefing'
+          buttonLabel='Brief me on these items'
+          cached={briefing}
+          action={briefDigestAction}
+          target={window}
+        />
+      )}
       <ReadStateProvider key={window}>
         {digest.kind === 'quiet' ? (
           <section aria-labelledby='quiet' className='mt-6'>

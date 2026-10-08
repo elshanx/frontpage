@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AiSummary from '@/components/AiSummary';
+import { summarizeItemAction } from '@/app/app/actions';
+import AiPanel from '@/components/AiPanel';
 import FeedIcon from '@/components/FeedIcon';
 import MarkReadOnView from '@/components/MarkReadOnView';
 import ReaderNav from '@/components/ReaderNav';
@@ -82,7 +83,15 @@ export default async function ReaderPage({ params, searchParams }: PageProps<'/a
             </a>
           )}
         </header>
-        {aiEnabled && <AiSummary itemId={item.id} cached={item.aiSummary} />}
+        {aiEnabled && (
+          <AiPanel
+            title='AI summary'
+            buttonLabel='Summarize this article'
+            cached={item.aiSummary}
+            action={summarizeItemAction}
+            target={item.id}
+          />
+        )}
         {item.contentHtml ? (
           <div
             className='reader-content mt-6'
