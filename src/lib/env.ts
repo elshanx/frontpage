@@ -8,6 +8,7 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Frontpage <onboarding@resend.dev>'),
   CRON_SECRET: z.string().min(16).optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(

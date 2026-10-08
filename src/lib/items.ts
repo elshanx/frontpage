@@ -30,6 +30,7 @@ export interface ReaderItem extends ListedItem {
   author: string | null;
   contentHtml: string | null;
   siteUrl: string | null;
+  aiSummary: string | null;
 }
 
 const from = (userId: string) => Prisma.sql`
@@ -88,7 +89,7 @@ export async function listItems(userId: string, filter: ListFilter, cursor: Curs
 
 export async function getItemForUser(userId: string, itemId: string): Promise<ReaderItem | null> {
   const [item] = await prisma.$queryRaw<ReaderItem[]>`
-    SELECT ${listColumns}, i.author, i."contentHtml", f."siteUrl" ${visibleFrom(userId)}
+    SELECT ${listColumns}, i.author, i."contentHtml", f."siteUrl", i."aiSummary" ${visibleFrom(userId)}
     WHERE i.id = ${itemId} AND ${isVisible}`;
   return item ?? null;
 }
@@ -350,4 +351,8 @@ export function markItemsRead(userId: string, itemIds: string[]) {
     JOIN "Subscription" s ON s."feedId" = i."feedId" AND s."userId" = ${userId}
     WHERE i.id = ANY(${itemIds})
     ON CONFLICT ("userId", "itemId") DO UPDATE SET "readAt" = EXCLUDED."readAt"`;
+}
+
+export async function saveSummary(itemId: string, summary: string) {
+  await prisma.item.update({ where: { id: itemId }, data: { aiSummary: summary } });
 }

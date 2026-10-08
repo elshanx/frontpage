@@ -8,20 +8,22 @@ datasource db {
 }
 
 model User {
-  id            String         @id
+  id            String           @id
   name          String
-  email         String         @unique
-  emailVerified Boolean        @default(false)
+  email         String           @unique
+  emailVerified Boolean          @default(false)
   image         String?
-  isAnonymous   Boolean?       @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  isAnonymous   Boolean?         @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
   sessions      Session[]
   accounts      Account[]
   categories    Category[]
   subscriptions Subscription[]
   states        ItemState[]
   preference    Preference?
+  aiUsage       AiUsage[]
+  briefings     DigestBriefing[]
 
   @@map("user")
 }
@@ -122,6 +124,8 @@ model Item {
   states      ItemState[]
   search      Unsupported("tsvector")? @default(dbgenerated("(setweight(to_tsvector('english'::regconfig, COALESCE(title, ''::text)), 'A'::\"char\") || setweight(to_tsvector('english'::regconfig, COALESCE(excerpt, ''::text)), 'B'::\"char\"))"))
 
+  aiSummary String?
+
   @@unique([feedId, guid])
   @@index([search], type: Gin)
   @@index([feedId, publishedAt(sort: Desc)])
@@ -168,8 +172,8 @@ model ItemState {
 }
 
 model Preference {
-  userId         String @id
-  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String    @id
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshMinutes Int       @default(30)
   layout         String    @default("comfortable")
   digestSeenAt   DateTime?
@@ -178,4 +182,23 @@ model Preference {
   readerLeading  Float     @default(1.7)
   readerMeasure  Int       @default(68)
   reduceMotion   Boolean   @default(false)
+}
+
+model AiUsage {
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day    DateTime @db.Date
+  count  Int      @default(0)
+
+  @@id([userId, day])
+}
+
+model DigestBriefing {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  windowKey String
+  text      String
+  createdAt DateTime @default(now())
+
+  @@id([userId, windowKey])
 }

@@ -2,12 +2,17 @@
 
 import { refresh } from 'next/cache';
 import { after } from 'next/server';
+import { generate } from '@/lib/ai/client';
+import type { AiOutcome } from '@/lib/ai/outcome';
+import { toPlainText } from '@/lib/feeds/html';
 import {
   countNewItems,
+  getItemForUser,
   listItems,
   listNewItems,
   markAllRead,
   markItemsRead,
+  saveSummary,
   scopedFeeds,
   setRead,
   setSaved,
@@ -115,4 +120,21 @@ export async function finishDigestAction(itemIds: string[]) {
   if (ids.length) await markItemsRead(user.id, ids);
   await setPreferences(user.id, { digestSeenAt: new Date() });
   refresh();
+}
+
+const SUMMARY_PROMPT =
+  'Summarize the article for a busy reader in two short paragraphs of plain text. No preamble, no headings, no bullet points. Stick to what the article says.';
+const MAX_ARTICLE_CHARS = 60_000;
+
+export async function summarizeItemAction(itemId: string): Promise<AiOutcome> {
+  const user = await requireUser();
+  if (!ID_PATTERN.test(itemId)) return { status: 'unavailable' };
+  const item = await getItemForUser(user.id, itemId);
+  if (!item) return { status: 'unavailable' };
+  if (item.aiSummary) return { status: 'ok', text: item.aiSummary };
+  const article = toPlainText(item.contentHtml ?? item.excerpt ?? '').slice(0, MAX_ARTICLE_CHARS);
+  if (!article) return { status: 'unavailable' };
+  const outcome = await generate(user, SUMMARY_PROMPT, `Title: ${item.title}\n\n${article}`);
+  if (outcome.status === 'ok') await saveSummary(item.id, outcome.text);
+  return outcome;
 }
