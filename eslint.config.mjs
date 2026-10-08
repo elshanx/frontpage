@@ -32,6 +32,7 @@ const eslintConfig = [
       'src/lib/feeds/**/*.ts',
       'src/lib/accounts/**/*.ts',
       'src/lib/reading/**/*.ts',
+      'src/lib/manage/**/*.ts',
     ],
     rules: {
       'import-x/extensions': ['error', 'ignorePackages', { ts: 'always' }],
