@@ -5,7 +5,10 @@ import discoverFeedUrls from '@/lib/feeds/discover';
 import { fetchFeed } from '@/lib/feeds/fetch';
 import { feedHealth } from '@/lib/feeds/health';
 import { FeedParseError, parseFeed } from '@/lib/feeds/parse';
+import parseCategoryName from '@/lib/manage/names';
 import moveItem from '@/lib/manage/order';
+import type { OpmlEntry } from '@/lib/opml/parse';
+import planImport from '@/lib/opml/plan';
 import { refreshFeed } from '@/lib/refresh';
 import sampleFeeds from '../../data/sample-feeds.json';
 
@@ -278,3 +281,89 @@ export async function subscribeStarterPack(userId: string, name: string, positio
 
 export const subscriptionCount = (userId: string) =>
   prisma.subscription.count({ where: { userId } });
+
+const IMPORT_CONCURRENCY = 4;
+
+async function mapPool<T, R>(values: T[], size: number, run: (value: T) => Promise<R>) {
+  const results: R[] = new Array(values.length);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    const index = next;
+    next += 1;
+    if (index >= values.length) return;
+    results[index] = await run(values[index]);
+    await worker();
+  };
+  await Promise.all(Array.from({ length: Math.min(size, values.length) }, worker));
+  return results;
+}
+
+async function categoryIdsByName(userId: string, names: string[]) {
+  const ids = new Map<string, string>();
+  await names.reduce(async (previous, name) => {
+    await previous;
+    const existing = await prisma.category.findUnique({
+      where: { userId_name: { userId, name } },
+      select: { id: true },
+    });
+    const category =
+      existing ??
+      (await prisma.category.create({
+        data: { userId, name, position: await nextCategoryPosition(userId) },
+        select: { id: true },
+      }));
+    ids.set(name, category.id);
+  }, Promise.resolve());
+  return ids;
+}
+
+export async function importOpml(userId: string, entries: OpmlEntry[]) {
+  const subscribed = await prisma.subscription.findMany({
+    where: { userId },
+    select: { feed: { select: { url: true } } },
+  });
+  const rows = planImport(
+    entries,
+    subscribed.map(({ feed }) => feed.url)
+  );
+  const fresh = rows.filter(({ status }) => status === 'new');
+  const previews = await mapPool(fresh, IMPORT_CONCURRENCY, ({ url }) => previewFeed(url));
+
+  const invalid = fresh.flatMap((row, index) => {
+    const preview = previews[index];
+    return preview.ok ? [] : [{ url: row.url, title: row.title, message: preview.message }];
+  });
+  const valid = fresh.flatMap((row, index) => {
+    const preview = previews[index];
+    return preview.ok ? [{ row, feed: preview.feed }] : [];
+  });
+
+  const categories = await categoryIdsByName(userId, [
+    ...new Set(valid.flatMap(({ row }) => parseCategoryName(row.category) ?? [])),
+  ]);
+  const feeds = await Promise.all(
+    valid.map(({ feed: { url, title, description, iconUrl, siteUrl } }) =>
+      prisma.feed.upsert({
+        where: { url },
+        create: { url, title, description, iconUrl, siteUrl },
+        update: {},
+        select: { id: true },
+      })
+    )
+  );
+  const { count } = await prisma.subscription.createMany({
+    data: valid.map(({ row }, index) => ({
+      userId,
+      feedId: feeds[index].id,
+      categoryId: categories.get(parseCategoryName(row.category) ?? '') ?? null,
+    })),
+    skipDuplicates: true,
+  });
+
+  return {
+    added: count,
+    duplicates: rows.length - fresh.length + (valid.length - count),
+    invalid,
+    feedIds: feeds.map(({ id }) => id),
+  };
+}

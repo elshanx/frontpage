@@ -9,9 +9,13 @@ export default function StarterPacks() {
         Start with a few feeds
       </h2>
       <p className='mt-1 text-text-secondary'>
-        Pick a starter pack, or{' '}
+        Pick a starter pack,{' '}
         <Link href='/app/feeds#add' className='font-semibold text-accent underline'>
           add a feed by URL
+        </Link>{' '}
+        or{' '}
+        <Link href='/app/feeds#import' className='font-semibold text-accent underline'>
+          import an OPML file
         </Link>
         .
       </p>

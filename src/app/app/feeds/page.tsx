@@ -3,6 +3,7 @@ import AddFeedForm from '@/components/AddFeedForm';
 import CategoryManager from '@/components/CategoryManager';
 import FeedRow from '@/components/FeedRow';
 import HealthBadge from '@/components/HealthBadge';
+import OpmlImport from '@/components/OpmlImport';
 import type { FeedHealth } from '@/lib/feeds/health';
 import summarizeHealth from '@/lib/manage/health';
 import { requireUser } from '@/lib/session';
@@ -48,6 +49,13 @@ export default async function FeedsPage() {
           Add a feed
         </h2>
         <AddFeedForm categories={options} />
+      </section>
+
+      <section id='import' aria-labelledby='import-heading' className='scroll-mt-6'>
+        <h2 id='import-heading' className='mb-3 text-lg font-semibold'>
+          Import or export OPML
+        </h2>
+        <OpmlImport />
       </section>
 
       <section aria-labelledby='categories-heading'>

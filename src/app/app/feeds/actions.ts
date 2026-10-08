@@ -3,12 +3,16 @@
 import { after } from 'next/server';
 import { refresh } from 'next/cache';
 import parseCategoryName from '@/lib/manage/names';
+import parseOpml, { type OpmlEntry, OpmlError } from '@/lib/opml/parse';
+import planImport, { type ImportRow } from '@/lib/opml/plan';
 import { ID_PATTERN } from '@/lib/reading/filters';
 import { refreshFeeds } from '@/lib/refresh';
 import { requireUser } from '@/lib/session';
 import {
   createCategory,
   deleteCategory,
+  importOpml,
+  listManagedFeeds,
   type FeedPreview,
   moveCategory,
   renameCategory,
@@ -112,4 +116,66 @@ export async function subscribeStarterPackAction(formData: FormData) {
   const feedIds = await subscribeStarterPack(user.id, text(formData, 'name'));
   after(() => refreshFeeds(feedIds));
   refresh();
+}
+
+const MAX_OPML_BYTES = 1024 * 1024;
+const MAX_OPML_ENTRIES = 200;
+
+export type OpmlPreviewState =
+  | { status: 'idle' }
+  | { status: 'error'; message: string }
+  | { status: 'preview'; rows: ImportRow[] };
+
+export async function previewOpmlAction(
+  _: OpmlPreviewState,
+  formData: FormData
+): Promise<OpmlPreviewState> {
+  const user = await requireUser();
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) {
+    return { status: 'error', message: 'Choose an OPML file to import' };
+  }
+  if (file.size > MAX_OPML_BYTES)
+    return { status: 'error', message: 'The file is larger than 1 MB' };
+  let entries: OpmlEntry[];
+  try {
+    entries = parseOpml(await file.text());
+  } catch (error) {
+    if (error instanceof OpmlError) return { status: 'error', message: error.message };
+    throw error;
+  }
+  if (!entries.length) return { status: 'error', message: 'No feeds were found in this file' };
+  if (entries.length > MAX_OPML_ENTRIES) {
+    return { status: 'error', message: `This file has more than ${MAX_OPML_ENTRIES} feeds` };
+  }
+  const { feeds } = await listManagedFeeds(user.id);
+  return {
+    status: 'preview',
+    rows: planImport(
+      entries,
+      feeds.map(({ url }) => url)
+    ),
+  };
+}
+
+const isEntry = (value: unknown): value is OpmlEntry => {
+  if (typeof value !== 'object' || value === null) return false;
+  const { url, title, category } = value as Record<string, unknown>;
+  return (
+    typeof url === 'string' &&
+    url.length <= 2048 &&
+    (title === null || typeof title === 'string') &&
+    (category === null || typeof category === 'string')
+  );
+};
+
+export async function importOpmlAction(entries: unknown) {
+  const user = await requireUser();
+  if (!Array.isArray(entries) || entries.length > MAX_OPML_ENTRIES || !entries.every(isEntry)) {
+    return { added: 0, duplicates: 0, invalid: [] };
+  }
+  const { feedIds, ...result } = await importOpml(user.id, entries);
+  after(() => refreshFeeds(feedIds));
+  refresh();
+  return result;
 }
