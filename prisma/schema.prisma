@@ -21,6 +21,7 @@ model User {
   categories    Category[]
   subscriptions Subscription[]
   states        ItemState[]
+  preference    Preference?
 
   @@map("user")
 }
@@ -164,4 +165,10 @@ model ItemState {
   @@id([userId, itemId])
   @@index([itemId])
   @@index([userId, savedAt])
+}
+
+model Preference {
+  userId         String @id
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshMinutes Int    @default(30)
 }
