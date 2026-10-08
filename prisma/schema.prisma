@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String         @id
+  name          String
+  email         String         @unique
+  emailVerified Boolean        @default(false)
+  image         String?
+  isAnonymous   Boolean?       @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  categories    Category[]
+  subscriptions Subscription[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Feed {
+  id              String         @id @default(uuid())
+  url             String         @unique
+  title           String
+  siteUrl         String?
+  description     String?
+  iconUrl         String?
+  etag            String?
+  lastModified    String?
+  lastFetchedAt   DateTime?
+  lastSuccessAt   DateTime?
+  latestItemAt    DateTime?
+  failCount       Int            @default(0)
+  lastError       String?
+  lastErrorStatus Int?
+  errorPermanent  Boolean        @default(false)
+  nextFetchAt     DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  items           Item[]
+  subscriptions   Subscription[]
+
+  @@index([nextFetchAt])
+}
+
+model Item {
+  id          String   @id @default(uuid())
+  feedId      String
+  feed        Feed     @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  guid        String
+  url         String?
+  title       String
+  author      String?
+  excerpt     String
+  contentHtml String?
+  imageUrl    String?
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+
+  @@unique([feedId, guid])
+  @@index([feedId, publishedAt(sort: Desc)])
+}
+
+model Category {
+  id            String         @id @default(uuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  position      Int
+  subscriptions Subscription[]
+
+  @@unique([userId, name])
+  @@index([userId, position])
+}
+
+model Subscription {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedId     String
+  feed       Feed      @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  title      String?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, feedId])
+  @@index([userId, categoryId])
+}
