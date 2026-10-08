@@ -71,8 +71,14 @@ test('isPrivateAddress covers loopback, private, link-local and mapped ranges', 
     'fe80::1',
     'fd00::1',
     '::ffff:127.0.0.1',
+    '::ffff:10.0.0.1',
+    '240.0.0.1',
+    '64:ff9b::7f00:1',
+    '64:ff9b::a9fe:a9fe',
+    '2002:7f00:1::',
+    '2002:c0a8:101::1',
   ].forEach((ip) => assert.equal(isPrivateAddress(ip), true, ip));
-  ['8.8.8.8', '104.16.0.1', '2606:4700::1'].forEach((ip) =>
+  ['8.8.8.8', '104.16.0.1', '2606:4700::1', '64:ff9b::808:808', '2002:808:808::1'].forEach((ip) =>
     assert.equal(isPrivateAddress(ip), false, ip)
   );
 });

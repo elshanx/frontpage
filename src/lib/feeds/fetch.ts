@@ -33,6 +33,15 @@ const privateRanges = new BlockList();
 PRIVATE_V4.forEach(([network, prefix]) => privateRanges.addSubnet(network, prefix, 'ipv4'));
 PRIVATE_V6.forEach(([network, prefix]) => privateRanges.addSubnet(network, prefix, 'ipv6'));
 
+const v4Hex = (ip: string) => {
+  const [a, b, c, d] = ip.split('.').map(Number);
+  return `${(a * 256 + b).toString(16)}:${(c * 256 + d).toString(16)}`;
+};
+PRIVATE_V4.forEach(([network, prefix]) => {
+  privateRanges.addSubnet(`64:ff9b::${v4Hex(network)}`, 96 + prefix, 'ipv6');
+  privateRanges.addSubnet(`2002:${v4Hex(network)}::`, 16 + prefix, 'ipv6');
+});
+
 export type FeedErrorKind =
   | 'invalid-url'
   | 'blocked-host'
@@ -92,14 +101,23 @@ export function isPrivateAddress(ip: string): boolean {
   return privateRanges.check(ip, isIP(ip) === 6 ? 'ipv6' : 'ipv4');
 }
 
-async function assertPublicHost(url: URL) {
+const aborted = (signal: AbortSignal) =>
+  new Promise<never>((_, reject) => {
+    signal.throwIfAborted();
+    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+  });
+
+async function assertPublicHost(url: URL, signal: AbortSignal) {
   const host = url.hostname.replace(/^\[|\]$/g, '');
   const addresses = isIP(host)
     ? [host]
     : (
-        await lookup(host, { all: true }).catch(() => {
-          throw failure('dns', `We couldn't find the server ${host}`);
-        })
+        await Promise.race([lookup(host, { all: true }), aborted(signal)]).catch(
+          (error: unknown) => {
+            if (signal.aborted) throw error;
+            throw failure('dns', `We couldn't find the server ${host}`);
+          }
+        )
       ).map(({ address }) => address);
   // ponytail: checked before connecting, so DNS rebinding between lookup and fetch is still possible; pin resolved IPs via an undici dispatcher if this app ever runs inside a private network.
   if (addresses.some(isPrivateAddress)) {
@@ -204,7 +222,7 @@ export async function fetchFeed(rawUrl: string, options: FetchOptions = {}): Pro
 
   const request = async (url: URL, hop: number, allPermanent: boolean): Promise<FetchResult> => {
     if (hop > MAX_REDIRECTS) throw failure('redirect-loop', 'The feed redirects too many times');
-    if (!options.allowPrivateHosts) await assertPublicHost(url);
+    if (!options.allowPrivateHosts) await assertPublicHost(url, signal);
     const response = await fetch(url, { redirect: 'manual', signal, headers });
 
     if (REDIRECT_STATUSES.has(response.status)) {
