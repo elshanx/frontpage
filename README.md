@@ -19,7 +19,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 | Authentication | Better Auth (email + password, anonymous guests, guest → account linking) |
 | Hosting | Vercel (daily cron for maintenance) |
 | Styling | Tailwind CSS 4 with the brand tokens in `src/app/tokens.css` |
-| Other | htmlparser2 + sanitize-html (parsing and sanitizing), next-themes, cmdk, `@anthropic-ai/sdk` (optional AI) |
+| Other | htmlparser2 + sanitize-html (parsing and sanitizing), next-themes, cmdk, Google Gemini API via `fetch` (optional AI) |
 
 ---
 
@@ -49,7 +49,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 - Items are grouped by category, with at most 2 per feed and 5 per group. Each group has an "N more" link to the full list.
 - Fewer than 8 items is a quiet stretch, so the page shows a flat list ending in "That's everything".
 - "Done" marks exactly the items shown as read and starts the next window from now.
-- With an API key set, Claude can add a 3–5 sentence briefing above the groups. It's cached per window.
+- With an API key set, Gemini can add a 3–5 sentence briefing above the groups. It's cached per window.
 
 **Why I chose this approach:** ranking is pure, deterministic and unit-tested (`src/lib/digest/rank.ts`). AI is an extra on top, not a dependency.
 
@@ -192,13 +192,13 @@ _your notes_
 **How it enhances the product:** on-demand two-paragraph article summaries, and a short "what happened" briefing on the digest.
 
 **Implementation highlights:**
-- **Model:** `claude-opus-5-5` at low effort, with server-side fallback for refusals.
+- **Model:** `gemini-3.5-flash` through the REST `generateContent` endpoint (free tier, no SDK). Blocked or safety-stopped replies are treated as unavailable.
 - **Caching:** summaries are stored on `Item`, so they're shared across users and an item is summarized once, ever. Briefings are cached per user per window.
 - **Limits:** a daily cap per user (5 for guests, 50 for accounts), enforced with one atomic SQL upsert.
-- **Errors:** a rate limit shows "try again"; other errors hide the panel quietly.
-- **Without a key:** every AI control disappears when `ANTHROPIC_API_KEY` is unset.
+- **Errors:** a rate limit (HTTP 429) shows "try again"; other errors and timeouts (30 s) hide the panel quietly and are logged on the server.
+- **Without a key:** every AI control disappears when `GEMINI_API_KEY` is unset.
 
-**Cost note:** cost scales with distinct articles summarized, not with page views. Switching to `claude-haiku-5-5` is a one-line change in `src/lib/ai/client.ts`.
+**Cost note:** the free tier covers a demo. Summaries are cached, so usage scales with distinct articles summarized, not page views. The model is one constant in `src/lib/ai/client.ts`. On the free tier, Google may use prompts to improve its products; prompts here are public article text and headlines only.
 
 **What I learned:** _your notes_
 
@@ -277,7 +277,7 @@ Checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 | `RESEND_API_KEY` | Optional. Sends password reset emails; without it they're logged to the console |
 | `EMAIL_FROM` | Sender for those emails |
 | `CRON_SECRET` | Optional. Protects `/api/cron/maintenance` (Vercel sends it automatically) |
-| `ANTHROPIC_API_KEY` | Optional. Enables AI summaries and digest briefings |
+| `GEMINI_API_KEY` | Optional. Enables AI summaries and digest briefings (free key from aistudio.google.com) |
 
 ### Deploying
 

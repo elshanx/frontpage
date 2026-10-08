@@ -1,37 +1,40 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { APIError, RateLimitError } from '@anthropic-ai/sdk';
-import { errorOutcome, replyOutcome } from './outcome.ts';
+import { replyOutcome, statusOutcome } from './outcome.ts';
 
-test('replyOutcome joins text blocks and treats refusals and empty replies as unavailable', () => {
+test('replyOutcome joins text parts and skips thoughts', () => {
   assert.deepEqual(
     replyOutcome({
-      stop_reason: 'end_turn',
-      content: [
-        { type: 'thinking' },
-        { type: 'text', text: 'First. ' },
-        { type: 'text', text: 'Second.' },
+      candidates: [
+        {
+          finishReason: 'STOP',
+          content: {
+            parts: [{ text: 'thinking…', thought: true }, { text: 'First. ' }, { text: 'Second.' }],
+          },
+        },
       ],
     }),
     { status: 'ok', text: 'First. Second.' }
   );
-  assert.deepEqual(
-    replyOutcome({ stop_reason: 'refusal', content: [{ type: 'text', text: 'partial' }] }),
-    { status: 'unavailable' }
-  );
-  assert.deepEqual(replyOutcome({ stop_reason: 'end_turn', content: [] }), {
-    status: 'unavailable',
-  });
 });
 
-test('errorOutcome maps rate limits to a retry message, hides other API errors, rethrows bugs', () => {
-  const headers = new Headers();
-  assert.equal(
-    errorOutcome(new RateLimitError(429, undefined, 'slow down', headers)).status,
-    'limit'
-  );
-  assert.deepEqual(errorOutcome(new APIError(500, undefined, 'boom', headers)), {
-    status: 'unavailable',
+test('replyOutcome keeps a truncated reply but rejects blocked, unsafe and empty ones', () => {
+  const truncated = replyOutcome({
+    candidates: [{ finishReason: 'MAX_TOKENS', content: { parts: [{ text: 'Cut' }] } }],
   });
-  assert.throws(() => errorOutcome(new TypeError('bug')), TypeError);
+  assert.deepEqual(truncated, { status: 'ok', text: 'Cut' });
+  [
+    { promptFeedback: { blockReason: 'SAFETY' } },
+    { candidates: [{ finishReason: 'SAFETY', content: { parts: [{ text: 'partial' }] } }] },
+    { candidates: [{ finishReason: 'RECITATION' }] },
+    { candidates: [{ finishReason: 'STOP', content: { parts: [] } }] },
+    { candidates: [] },
+    {},
+  ].forEach((reply) => assert.deepEqual(replyOutcome(reply), { status: 'unavailable' }));
+});
+
+test('statusOutcome maps 429 to a retry message and hides other errors', () => {
+  assert.equal(statusOutcome(429).status, 'limit');
+  assert.deepEqual(statusOutcome(500), { status: 'unavailable' });
+  assert.deepEqual(statusOutcome(403), { status: 'unavailable' });
 });

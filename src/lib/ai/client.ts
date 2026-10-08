@@ -1,18 +1,20 @@
 import 'server-only';
-import Anthropic from '@anthropic-ai/sdk';
 import prisma from '@/lib/db';
 import env from '@/lib/env';
 import {
   type AiOutcome,
   DAILY_CAP,
+  type GeminiReply,
   LIMIT_REACHED,
-  errorOutcome,
   replyOutcome,
+  statusOutcome,
 } from '@/lib/ai/outcome';
 
-export const aiEnabled = Boolean(env.ANTHROPIC_API_KEY);
+const MODEL = 'gemini-3.5-flash';
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const TIMEOUT_MS = 30_000;
 
-const client = aiEnabled ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : null;
+export const aiEnabled = Boolean(env.GEMINI_API_KEY);
 
 async function takeQuota(userId: string, isGuest: boolean) {
   const cap = isGuest ? DAILY_CAP.guest : DAILY_CAP.account;
@@ -29,20 +31,26 @@ export async function generate(
   system: string,
   input: string
 ): Promise<AiOutcome> {
-  if (!client) return { status: 'unavailable' };
+  if (!env.GEMINI_API_KEY) return { status: 'unavailable' };
   if (!(await takeQuota(user.id, Boolean(user.isAnonymous)))) return LIMIT_REACHED;
   try {
-    const reply = await client.beta.messages.create({
-      model: 'claude-opus-5-5',
-      max_tokens: 1024,
-      system,
-      messages: [{ role: 'user', content: input }],
-      output_config: { effort: 'low' },
-      fallbacks: 'default',
-      betas: ['server-side-fallback-2026-07-01'],
+    const response = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: input }] }],
+        generationConfig: { maxOutputTokens: 4096 },
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    return replyOutcome(reply);
+    if (!response.ok) {
+      console.error(`[ai] Gemini ${response.status}: ${(await response.text()).slice(0, 500)}`);
+      return statusOutcome(response.status);
+    }
+    return replyOutcome((await response.json()) as GeminiReply);
   } catch (error) {
-    return errorOutcome(error);
+    console.error('[ai] Gemini request failed', error);
+    return { status: 'unavailable' };
   }
 }
