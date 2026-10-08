@@ -106,9 +106,9 @@ model Feed {
 }
 
 model Item {
-  id          String      @id @default(uuid())
+  id          String                   @id @default(uuid())
   feedId      String
-  feed        Feed        @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  feed        Feed                     @relation(fields: [feedId], references: [id], onDelete: Cascade)
   guid        String
   url         String?
   title       String
@@ -117,10 +117,12 @@ model Item {
   contentHtml String?
   imageUrl    String?
   publishedAt DateTime
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime                 @default(now())
   states      ItemState[]
+  search      Unsupported("tsvector")? @default(dbgenerated("(setweight(to_tsvector('english'::regconfig, COALESCE(title, ''::text)), 'A'::\"char\") || setweight(to_tsvector('english'::regconfig, COALESCE(excerpt, ''::text)), 'B'::\"char\"))"))
 
   @@unique([feedId, guid])
+  @@index([search], type: Gin)
   @@index([feedId, publishedAt(sort: Desc)])
 }
 
@@ -152,12 +154,14 @@ model Subscription {
 }
 
 model ItemState {
-  userId String
-  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  itemId String
-  item   Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  readAt DateTime?
+  userId  String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId  String
+  item    Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  readAt  DateTime?
+  savedAt DateTime?
 
   @@id([userId, itemId])
   @@index([itemId])
+  @@index([userId, savedAt])
 }

@@ -104,8 +104,9 @@ export async function unsubscribe(userId: string, subscriptionId: string) {
       select: { feedId: true },
     });
     if (!subscription) return;
-    // ponytail: drops saved items too until Phase 5 adds savedAt; then keep rows where savedAt is set.
-    await tx.itemState.deleteMany({ where: { userId, item: { feedId: subscription.feedId } } });
+    await tx.itemState.deleteMany({
+      where: { userId, savedAt: null, item: { feedId: subscription.feedId } },
+    });
     await tx.subscription.delete({ where: { id: subscriptionId } });
   });
 }
