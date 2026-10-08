@@ -8,7 +8,15 @@ import { refreshFeeds } from '@/lib/refresh';
 
 const INITIAL_WAIT_MS = 8_000;
 
-export default async function ItemList({ userId, filter }: { userId: string; filter: ListFilter }) {
+export default async function ItemList({
+  userId,
+  filter,
+  refreshMinutes,
+}: {
+  userId: string;
+  filter: ListFilter;
+  refreshMinutes: number;
+}) {
   const { neverFetched, due } = await feedsToRefresh(userId);
   const initialRefresh = refreshFeeds(neverFetched);
   after(() => Promise.all([initialRefresh, refreshFeeds(due)]));
@@ -34,5 +42,7 @@ export default async function ItemList({ userId, filter }: { userId: string; fil
     );
   }
 
-  return <ItemFeed initial={page} search={search} now={page.fetchedAt} />;
+  return (
+    <ItemFeed initial={page} search={search} now={page.fetchedAt} refreshMinutes={refreshMinutes} />
+  );
 }

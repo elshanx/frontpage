@@ -280,6 +280,13 @@ export function scopedFeeds(userId: string, filter: ListFilter) {
     WHERE s."userId" = ${userId} ${scopeSql(filter)}`;
 }
 
+export async function lastUpdated(userId: string, filter: ListFilter) {
+  const times = (await scopedFeeds(userId, filter)).map(({ lastSuccessAt }) =>
+    lastSuccessAt ? lastSuccessAt.getTime() : 0
+  );
+  return { lastUpdated: Math.max(0, ...times) || null, now: Date.now() };
+}
+
 const newSince = (filter: ListFilter, since: Date) =>
   Prisma.sql`WHERE i."createdAt" > ${since}::timestamp ${filterSql(filter)}`;
 

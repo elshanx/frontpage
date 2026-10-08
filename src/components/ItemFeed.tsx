@@ -1,24 +1,78 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
-import { loadItems } from '@/app/app/actions';
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
+import { checkNewItems, loadItems, loadNewItems } from '@/app/app/actions';
 import ItemRow from '@/components/ItemRow';
+import { REFRESHED_EVENT } from '@/components/RefreshButton';
 import type { ListedItem } from '@/lib/items';
+
+const FOCUS_CHECK_MS = 60_000;
+
+const newestFirst = (a: ListedItem, b: ListedItem) =>
+  new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime() || b.id.localeCompare(a.id);
 
 export default function ItemFeed({
   initial,
   search,
   now,
+  refreshMinutes,
 }: {
-  initial: { items: ListedItem[]; nextCursor: string | null };
+  initial: { items: ListedItem[]; nextCursor: string | null; fetchedAt: number };
   search: string;
   now: number;
+  refreshMinutes: number;
 }) {
   const [items, setItems] = useState(initial.items);
   const [cursor, setCursor] = useState(initial.nextCursor);
   const [failed, setFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
   const sentinel = useRef<HTMLDivElement>(null);
+  const since = useRef(initial.fetchedAt);
+  const lastCheck = useRef(initial.fetchedAt);
+  const heightBeforeInsert = useRef<number | null>(null);
+  const [newCount, setNewCount] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
+
+  const showNew = async () => {
+    const page = await loadNewItems(search, since.current);
+    since.current = page.fetchedAt;
+    setNewCount(0);
+    if (!page.items.length) return;
+    heightBeforeInsert.current = document.documentElement.scrollHeight;
+    setItems((current) => {
+      const seen = new Set(current.map(({ id }) => id));
+      return [...page.items.filter(({ id }) => !seen.has(id)), ...current].sort(newestFirst);
+    });
+    setAnnouncement(`${page.items.length} new ${page.items.length === 1 ? 'item' : 'items'} added`);
+  };
+
+  useLayoutEffect(() => {
+    if (heightBeforeInsert.current === null) return;
+    const added = document.documentElement.scrollHeight - heightBeforeInsert.current;
+    heightBeforeInsert.current = null;
+    if (window.scrollY > 0) window.scrollBy(0, added);
+  }, [items]);
+
+  useEffect(() => {
+    const check = async () => {
+      if (document.hidden) return;
+      lastCheck.current = Date.now();
+      setNewCount(await checkNewItems(search, since.current));
+    };
+    const onVisible = () => {
+      if (!document.hidden && Date.now() - lastCheck.current >= FOCUS_CHECK_MS) check();
+    };
+    const onRefreshed = () => showNew();
+    window.addEventListener(REFRESHED_EVENT, onRefreshed);
+    if (!refreshMinutes) return () => window.removeEventListener(REFRESHED_EVENT, onRefreshed);
+    const timer = setInterval(check, refreshMinutes * 60_000);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener(REFRESHED_EVENT, onRefreshed);
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  });
 
   const loadMore = () => {
     if (!cursor || isPending) return;
@@ -52,7 +106,19 @@ export default function ItemFeed({
 
   return (
     <>
-      <ul>
+      <div role='status' className='sticky top-0 z-10 flex justify-center'>
+        {newCount > 0 && (
+          <button
+            type='button'
+            onClick={() => startTransition(showNew)}
+            className='mt-2 min-h-11 rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-lg hover:bg-accent-hover'
+          >
+            Show {newCount} new {newCount === 1 ? 'item' : 'items'}
+          </button>
+        )}
+        <span className='sr-only'>{announcement}</span>
+      </div>
+      <ul className='[overflow-anchor:none]'>
         {items.map((item) => (
           <ItemRow key={item.id} item={item} search={search} now={now} />
         ))}

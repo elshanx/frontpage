@@ -81,6 +81,7 @@ export default async function Sidebar({ userId }: { userId: string }) {
       >
         Manage feeds
       </Link>
+      <PageLink href='/app/settings'>Settings</PageLink>
     </nav>
   );
 }

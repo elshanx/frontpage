@@ -5,8 +5,10 @@ import ItemList from '@/components/ItemList';
 import ItemListSkeleton from '@/components/ItemListSkeleton';
 import MarkAllRead from '@/components/MarkAllRead';
 import { ReadStateProvider } from '@/components/ReadState';
+import RefreshButton from '@/components/RefreshButton';
 import StarterPacks from '@/components/StarterPacks';
-import { filterLabel } from '@/lib/items';
+import { filterLabel, lastUpdated } from '@/lib/items';
+import { getRefreshMinutes } from '@/lib/preferences';
 import { filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
 import { subscriptionCount } from '@/lib/subscriptions';
@@ -29,7 +31,11 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
     );
   }
   const filter = parseListFilter(params);
-  const label = await filterLabel(user.id, filter);
+  const [label, freshness, refreshMinutes] = await Promise.all([
+    filterLabel(user.id, filter),
+    lastUpdated(user.id, filter),
+    getRefreshMinutes(user.id),
+  ]);
   const search = filterToSearch(filter);
   const views = [
     { name: 'All', unreadOnly: false },
@@ -54,6 +60,7 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
                 </Link>
               ))}
             </nav>
+            <RefreshButton search={search} {...freshness} />
             <MarkAllRead
               search={search}
               label={filter.kind === 'all' ? 'Mark all read' : `Mark ${label} read`}
@@ -61,7 +68,7 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
           </div>
         </div>
         <Suspense key={search} fallback={<ItemListSkeleton />}>
-          <ItemList userId={user.id} filter={filter} />
+          <ItemList userId={user.id} filter={filter} refreshMinutes={refreshMinutes} />
         </Suspense>
       </ReadStateProvider>
     </main>
