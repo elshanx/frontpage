@@ -13,6 +13,8 @@ import { filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
 import { subscriptionCount } from '@/lib/subscriptions';
 
+export const maxDuration = 300;
+
 export async function generateMetadata({ searchParams }: PageProps<'/app'>): Promise<Metadata> {
   const [user, params] = await Promise.all([requireUser(), searchParams]);
   const filter = parseListFilter(params);
