@@ -48,7 +48,7 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
   return (
     <main id='main' className='mx-auto max-w-feed px-4 py-6'>
       <ReadStateProvider key={search}>
-        <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h1 className='text-xl font-semibold'>{label}</h1>
           <div className='flex flex-wrap items-center gap-2'>
             <nav aria-label='Show' className='flex rounded-md border border-border p-0.5 text-sm'>

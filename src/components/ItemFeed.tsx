@@ -124,7 +124,7 @@ export default function ItemFeed({
       <ul
         className={
           layout === 'cards'
-            ? 'mt-4 grid gap-4 [overflow-anchor:none] sm:grid-cols-2 lg:grid-cols-3'
+            ? 'grid gap-4 [overflow-anchor:none] sm:grid-cols-2 lg:grid-cols-3'
             : '[overflow-anchor:none]'
         }
       >
