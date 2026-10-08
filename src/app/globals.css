@@ -80,7 +80,11 @@
 
 @layer components {
   .reader-content {
-    @apply font-serif text-lg leading-[1.7] break-words;
+    @apply break-words;
+    max-width: var(--reader-measure, 68ch);
+    font-family: var(--reader-font, var(--font-serif));
+    font-size: var(--reader-size, 18px);
+    line-height: var(--reader-leading, 1.7);
 
     & > * + * {
       @apply mt-5;

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import saveSettingsAction from '@/app/app/settings/actions';
+import ReaderSettings from '@/components/ReaderSettings';
 import { getPreferences } from '@/lib/preferences';
 import { requireUser } from '@/lib/session';
 
@@ -14,7 +15,7 @@ const INTERVALS = [
 
 export default async function SettingsPage({ searchParams }: PageProps<'/app/settings'>) {
   const [user, params] = await Promise.all([requireUser(), searchParams]);
-  const { refreshMinutes } = await getPreferences(user.id);
+  const { refreshMinutes, ...prefs } = await getPreferences(user.id);
 
   return (
     <main id='main' className='mx-auto max-w-feed px-4 py-6'>
@@ -40,6 +41,14 @@ export default async function SettingsPage({ searchParams }: PageProps<'/app/set
             </label>
           ))}
         </fieldset>
+        <ReaderSettings
+          initial={{
+            readerFont: prefs.readerFont,
+            readerSize: prefs.readerSize,
+            readerLeading: prefs.readerLeading,
+            readerMeasure: prefs.readerMeasure,
+          }}
+        />
         <div className='flex items-center gap-3'>
           <button
             type='submit'

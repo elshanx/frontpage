@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Preference" ADD COLUMN     "readerFont" TEXT NOT NULL DEFAULT 'serif',
+ADD COLUMN     "readerLeading" DOUBLE PRECISION NOT NULL DEFAULT 1.7,
+ADD COLUMN     "readerMeasure" INTEGER NOT NULL DEFAULT 68,
+ADD COLUMN     "readerSize" INTEGER NOT NULL DEFAULT 18,
+ADD COLUMN     "reduceMotion" BOOLEAN NOT NULL DEFAULT false;

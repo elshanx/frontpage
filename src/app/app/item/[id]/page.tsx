@@ -6,6 +6,8 @@ import ReaderNav from '@/components/ReaderNav';
 import SaveButton from '@/components/SaveButton';
 import { getItemForUser, getNeighbors } from '@/lib/items';
 import { ID_PATTERN, filterToSearch, parseListFilter } from '@/lib/reading/filters';
+import { getPreferences } from '@/lib/preferences';
+import { readerStyle } from '@/lib/reading/reader-prefs';
 import { requireUser } from '@/lib/session';
 
 const fullDate = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
@@ -31,11 +33,19 @@ export default async function ReaderPage({ params, searchParams }: PageProps<'/a
   const { user, item } = await loadItem(id);
   const filter = parseListFilter(query);
   const from = filterToSearch(filter);
-  const { newerId, olderId } = await getNeighbors(user.id, filter, item);
+  const [{ newerId, olderId }, prefs] = await Promise.all([
+    getNeighbors(user.id, filter, item),
+    getPreferences(user.id),
+  ]);
+  const textWidth = Math.round(prefs.readerMeasure * prefs.readerSize * 0.5);
   const original = item.url ?? item.siteUrl;
 
   return (
-    <main id='main' className='mx-auto max-w-content px-4 py-6'>
+    <main
+      id='main'
+      className='mx-auto px-4 py-6'
+      style={{ ...readerStyle(prefs), maxWidth: `max(45rem, ${textWidth}px + 2rem)` }}
+    >
       <MarkReadOnView id={item.id} unread={item.unread} />
       <ReaderNav from={from} newerId={newerId} olderId={olderId} label='Article navigation' />
       <article className='mt-6'>
@@ -77,7 +87,7 @@ export default async function ReaderPage({ params, searchParams }: PageProps<'/a
             dangerouslySetInnerHTML={{ __html: item.contentHtml }}
           />
         ) : (
-          <div className='mt-6 font-serif text-lg leading-relaxed'>
+          <div className='reader-content mt-6'>
             {item.excerpt && <p>{item.excerpt}</p>}
             {original && (
               <a

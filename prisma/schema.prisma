@@ -173,4 +173,9 @@ model Preference {
   refreshMinutes Int       @default(30)
   layout         String    @default("comfortable")
   digestSeenAt   DateTime?
+  readerFont     String    @default("serif")
+  readerSize     Int       @default(18)
+  readerLeading  Float     @default(1.7)
+  readerMeasure  Int       @default(68)
+  reduceMotion   Boolean   @default(false)
 }
