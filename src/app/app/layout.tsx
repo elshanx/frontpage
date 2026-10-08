@@ -53,7 +53,16 @@ export default async function AppLayout({ children }: LayoutProps<'/app'>) {
           <SidebarShell>
             <Sidebar userId={user.id} />
           </SidebarShell>
-          <div className='min-w-0 flex-1'>{children}</div>
+          <div className='min-w-0 flex-1'>
+            {children}
+            <footer className='px-4 py-6 text-center text-sm text-text-tertiary'>
+              <Link href='/accessibility' className='underline hover:text-text-primary'>
+                Accessibility
+              </Link>
+              <span aria-hidden='true'> · </span>Press <kbd className='font-mono'>?</kbd> for
+              keyboard shortcuts
+            </footer>
+          </div>
         </div>
       </Announcer>
     </div>
