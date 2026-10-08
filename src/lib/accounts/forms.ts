@@ -27,6 +27,8 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
 }
 
 export function safeNextPath(value: string | null | undefined): string {
-  if (!value?.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return '/app';
-  return value;
+  if (!value?.startsWith('/')) return '/app';
+  const base = 'http://same-origin.invalid';
+  const url = new URL(value, base);
+  return url.origin === base ? url.pathname + url.search + url.hash : '/app';
 }
