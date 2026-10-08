@@ -12,7 +12,7 @@ const filterFromSearch = (search: string) =>
 export async function loadItems(search: string, cursor: string) {
   const user = await requireUser();
   const position = decodeCursor(cursor);
-  if (!position) return { items: [], nextCursor: null };
+  if (!position) return { items: [], nextCursor: null, fetchedAt: Date.now() };
   return listItems(user.id, filterFromSearch(search), position);
 }
 

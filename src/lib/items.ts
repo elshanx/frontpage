@@ -66,7 +66,11 @@ export async function listItems(userId: string, filter: ListFilter, cursor: Curs
     LIMIT ${PAGE_SIZE + 1}`;
   const items = rows.slice(0, PAGE_SIZE);
   const last = items.at(-1);
-  return { items, nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(last) : null };
+  return {
+    items,
+    nextCursor: rows.length > PAGE_SIZE && last ? encodeCursor(last) : null,
+    fetchedAt: Date.now(),
+  };
 }
 
 export async function getItemForUser(userId: string, itemId: string): Promise<ReaderItem | null> {
@@ -88,6 +92,23 @@ export async function getNeighbors(userId: string, filter: ListFilter, current: 
       ORDER BY i."publishedAt" DESC, i.id DESC LIMIT 1`,
   ]);
   return { newerId: newer?.id ?? null, olderId: older?.id ?? null };
+}
+
+export async function filterLabel(userId: string, filter: ListFilter) {
+  if (filter.kind === 'all') return 'All items';
+  if (filter.kind === 'category') {
+    if (!filter.id) return 'Uncategorized';
+    const category = await prisma.category.findFirst({
+      where: { id: filter.id, userId },
+      select: { name: true },
+    });
+    return category?.name ?? 'Unknown category';
+  }
+  const subscription = await prisma.subscription.findFirst({
+    where: { userId, feedId: filter.id },
+    select: { title: true, feed: { select: { title: true } } },
+  });
+  return subscription ? subscription.title || subscription.feed.title : 'Unknown feed';
 }
 
 export function unreadCounts(userId: string) {

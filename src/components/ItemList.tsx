@@ -1,57 +1,38 @@
+import Link from 'next/link';
 import { after } from 'next/server';
 import { setTimeout } from 'node:timers/promises';
+import ItemFeed from '@/components/ItemFeed';
 import { feedsToRefresh, listItems } from '@/lib/items';
+import { type ListFilter, filterToSearch } from '@/lib/reading/filters';
 import { refreshFeeds } from '@/lib/refresh';
 
 const INITIAL_WAIT_MS = 8_000;
-const dateFormat = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 
-export default async function ItemList({ userId }: { userId: string }) {
+export default async function ItemList({ userId, filter }: { userId: string; filter: ListFilter }) {
   const { neverFetched, due } = await feedsToRefresh(userId);
   const initialRefresh = refreshFeeds(neverFetched);
   after(() => Promise.all([initialRefresh, refreshFeeds(due)]));
   await Promise.race([initialRefresh, setTimeout(INITIAL_WAIT_MS)]);
-  const { items } = await listItems(userId, { kind: 'all', unreadOnly: false }, null);
+  const page = await listItems(userId, filter, null);
+  const search = filterToSearch(filter);
 
-  if (!items.length) {
-    return (
+  if (!page.items.length) {
+    return filter.unreadOnly ? (
+      <p className='py-12 text-center text-text-secondary'>
+        No unread items here.{' '}
+        <Link
+          href={`/app${filterToSearch({ ...filter, unreadOnly: false })}`}
+          className='font-semibold text-accent underline'
+        >
+          Show all items
+        </Link>
+      </p>
+    ) : (
       <p className='py-12 text-center text-text-secondary'>
         No items yet. Your feeds are still loading.
       </p>
     );
   }
 
-  return (
-    <ul className='divide-y divide-border-subtle'>
-      {items.map((item) => (
-        <li key={item.id} className='py-4'>
-          <article>
-            <h2 className='text-lg font-medium'>
-              {item.url ? (
-                <a
-                  href={item.url}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-accent'
-                >
-                  {item.title}
-                </a>
-              ) : (
-                item.title
-              )}
-            </h2>
-            <p className='mt-1 text-xs text-text-tertiary'>
-              {item.feedTitle} ·{' '}
-              <time dateTime={item.publishedAt.toISOString()}>
-                {dateFormat.format(item.publishedAt)}
-              </time>
-            </p>
-            {item.excerpt && (
-              <p className='mt-1 line-clamp-2 text-sm text-text-secondary'>{item.excerpt}</p>
-            )}
-          </article>
-        </li>
-      ))}
-    </ul>
-  );
+  return <ItemFeed initial={page} search={search} now={page.fetchedAt} />;
 }
