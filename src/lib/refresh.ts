@@ -56,10 +56,7 @@ const successFields = (now: Date) => ({
   nextFetchAt: nextFetchAt(0, now),
 });
 
-export async function refreshFeed(feedId: string, { force = false } = {}): Promise<void> {
-  const now = new Date();
-  if (!(await claim(feedId, force, now))) return;
-  const feed = await prisma.feed.findUniqueOrThrow({ where: { id: feedId } });
+async function fetchAndStore(feed: Feed, now: Date): Promise<void> {
   const result = await fetchFeed(feed.url, { etag: feed.etag, lastModified: feed.lastModified });
 
   if (result.kind === 'error') {
@@ -112,6 +109,27 @@ export async function refreshFeed(feedId: string, { force = false } = {}): Promi
       },
     }),
   ]);
+}
+
+export async function refreshFeed(feedId: string, { force = false } = {}): Promise<void> {
+  const now = new Date();
+  if (!(await claim(feedId, force, now))) return;
+  const feed = await prisma.feed.findUniqueOrThrow({ where: { id: feedId } });
+  try {
+    await fetchAndStore(feed, now);
+  } catch (error) {
+    await recordFailure(
+      feed,
+      {
+        kind: 'network',
+        message: "We couldn't save this feed's items",
+        status: null,
+        permanent: false,
+      },
+      now
+    );
+    throw error;
+  }
 }
 
 export async function refreshFeeds(feedIds: string[], options: { force?: boolean } = {}) {

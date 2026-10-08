@@ -184,13 +184,7 @@ function parseAtom(root: Element, feedUrl?: string): ParsedFeed {
   };
 }
 
-export function parseFeed(xml: string, feedUrl?: string): ParsedFeed {
-  const dom = parseDocument(xml, {
-    xmlMode: true,
-    lowerCaseTags: true,
-    lowerCaseAttributeNames: true,
-  });
-  const root = dom.children.find(isTag);
+function parseRoot(root: Element | undefined, feedUrl?: string): ParsedFeed {
   if (root?.name === 'rss') return parseRss(root, 'rss2', feedUrl);
   if (root?.name === 'rdf:rdf') return parseRss(root, 'rdf', feedUrl);
   if (root?.name === 'feed') return parseAtom(root, feedUrl);
@@ -198,4 +192,22 @@ export function parseFeed(xml: string, feedUrl?: string): ParsedFeed {
     throw new FeedParseError('This address returned a web page, not a feed');
   }
   throw new FeedParseError("This doesn't look like an RSS or Atom feed");
+}
+
+const TRAILING_COMMENTS = /(?:\s|<!--[\s\S]*?-->)+$/;
+
+const isTruncated = (xml: string, rootName: string) =>
+  !xml.replace(TRAILING_COMMENTS, '').toLowerCase().endsWith(`</${rootName}>`);
+
+export function parseFeed(xml: string, feedUrl?: string): ParsedFeed {
+  const text = xml.replaceAll('\u0000', '');
+  const dom = parseDocument(text, {
+    xmlMode: true,
+    lowerCaseTags: true,
+    lowerCaseAttributeNames: true,
+  });
+  const root = dom.children.find(isTag);
+  const feed = parseRoot(root, feedUrl);
+  if (root && isTruncated(text, root.name)) feed.items = feed.items.slice(0, -1);
+  return feed;
 }

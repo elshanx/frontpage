@@ -145,6 +145,30 @@ test('partially parses truncated XML with bare ampersands', () => {
   );
   assert.equal(feed.title, 'Tom & Jerry');
   assert.equal(feed.items[0].title, 'First');
+  assert.equal(feed.items.length, 1);
+});
+
+test('drops the cut-off last item from truncated Atom and RDF', () => {
+  assert.equal(
+    parseFeed('<feed><entry><title>A</title><id>1</id></entry><entry><title>B</title><summary>half')
+      .items.length,
+    1
+  );
+});
+
+test('keeps every item when a comment trails the root element', () => {
+  const feed = parseFeed(
+    '<rss><channel><item><title>A</title></item><item><title>B</title></item></channel></rss>\n<!-- cached at 12:00 -->\n'
+  );
+  assert.equal(feed.items.length, 2);
+});
+
+test('strips NUL characters that Postgres rejects', () => {
+  const [item] = parseFeed(
+    '<rss><channel><item><title>Bad\u0000title</title><description>&lt;p&gt;x\u0000y&lt;/p&gt;</description></item></channel></rss>'
+  ).items;
+  assert.equal(item.title, 'Badtitle');
+  assert.equal(item.excerpt, 'xy');
 });
 
 test('accepts a valid feed with no items', () => {

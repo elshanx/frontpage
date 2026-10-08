@@ -28,6 +28,11 @@ test('falls back to Windows-1252 when bytes labelled UTF-8 are invalid', () => {
   assert.equal(decodeFeed(mislabeled, 'text/xml; charset=utf-8'), '<t>café ’</t>');
 });
 
+test('prefers valid UTF-8 over a single-byte label', () => {
+  const utf8 = new TextEncoder().encode('<t>it’s café</t>');
+  assert.equal(decodeFeed(utf8, 'text/xml; charset=ISO-8859-1'), '<t>it’s café</t>');
+});
+
 test('ignores unknown charset labels', () => {
   assert.equal(
     decodeFeed(new TextEncoder().encode('<t>ok</t>'), 'text/xml; charset=x-bogus'),

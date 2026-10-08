@@ -1,5 +1,6 @@
 const XML_DECLARATION_ENCODING = /^<\?xml[^>]*encoding=["']([\w.:-]+)["']/i;
 const HEADER_CHARSET = /charset=["']?([\w.:-]+)/i;
+const SINGLE_BYTE_LABELS = new Set(['iso-8859-1', 'latin1', 'windows-1252', 'us-ascii', 'ascii']);
 
 function byteOrderMark(bytes: Uint8Array): string | null {
   if (bytes[0] === 0xff && bytes[1] === 0xfe) return 'utf-16le';
@@ -17,7 +18,7 @@ function declaredCharset(bytes: Uint8Array, contentType: string | null): string 
 export default function decodeFeed(bytes: Uint8Array, contentType: string | null): string {
   const charset = byteOrderMark(bytes) ?? declaredCharset(bytes, contentType) ?? 'utf-8';
 
-  if (charset === 'utf-8' || charset === 'utf8') {
+  if (charset === 'utf-8' || charset === 'utf8' || SINGLE_BYTE_LABELS.has(charset)) {
     try {
       return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
     } catch {
