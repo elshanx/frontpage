@@ -11,7 +11,7 @@ export default async function ItemList({ userId }: { userId: string }) {
   const initialRefresh = refreshFeeds(neverFetched);
   after(() => Promise.all([initialRefresh, refreshFeeds(due)]));
   await Promise.race([initialRefresh, setTimeout(INITIAL_WAIT_MS)]);
-  const items = await listItems(userId);
+  const { items } = await listItems(userId, { kind: 'all', unreadOnly: false }, null);
 
   if (!items.length) {
     return (
@@ -41,7 +41,7 @@ export default async function ItemList({ userId }: { userId: string }) {
               )}
             </h2>
             <p className='mt-1 text-xs text-text-tertiary'>
-              {item.feed.title} ·{' '}
+              {item.feedTitle} ·{' '}
               <time dateTime={item.publishedAt.toISOString()}>
                 {dateFormat.format(item.publishedAt)}
               </time>
