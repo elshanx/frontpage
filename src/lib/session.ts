@@ -9,6 +9,12 @@ export async function getSession() {
 
 export async function requireUser() {
   const session = await getSession();
-  if (!session) redirect('/');
+  if (!session) redirect('/sign-in');
   return session.user;
+}
+
+export async function redirectSignedIn() {
+  const session = await getSession();
+  if (session && !session.user.isAnonymous) redirect('/app');
+  return session;
 }

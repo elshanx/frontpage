@@ -19,7 +19,18 @@ export default async function Home() {
               Open your front page
             </Link>
           ) : (
-            <GuestButton />
+            <div className='flex flex-col items-center gap-4'>
+              <GuestButton />
+              <p className='text-sm text-text-secondary'>
+                <Link href='/sign-up' className='font-semibold text-accent underline'>
+                  Create an account
+                </Link>{' '}
+                or{' '}
+                <Link href='/sign-in' className='font-semibold text-accent underline'>
+                  sign in
+                </Link>
+              </p>
+            </div>
           )}
         </div>
       </div>
