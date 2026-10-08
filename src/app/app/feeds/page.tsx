@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AddFeedForm from '@/components/AddFeedForm';
+import CategoryManager from '@/components/CategoryManager';
 import FeedRow from '@/components/FeedRow';
 import HealthBadge from '@/components/HealthBadge';
 import type { FeedHealth } from '@/lib/feeds/health';
@@ -47,6 +48,20 @@ export default async function FeedsPage() {
           Add a feed
         </h2>
         <AddFeedForm categories={options} />
+      </section>
+
+      <section aria-labelledby='categories-heading'>
+        <h2 id='categories-heading' className='mb-3 text-lg font-semibold'>
+          Categories
+        </h2>
+        <CategoryManager
+          categories={categories.map(({ id, name, feeds: categoryFeeds }) => ({
+            id,
+            name,
+            feedCount: categoryFeeds.length,
+          }))}
+          uncategorizedCount={uncategorized.length}
+        />
       </section>
 
       <section aria-labelledby='feeds-heading'>
