@@ -1,17 +1,9 @@
 'use server';
 
 import { refresh } from 'next/cache';
-import {
-  listItems,
-  markAllRead,
-  searchItems,
-  setRead,
-  setSaved,
-  undoMarkAllRead,
-} from '@/lib/items';
+import { listItems, markAllRead, setRead, setSaved, undoMarkAllRead } from '@/lib/items';
 import { decodeCursor } from '@/lib/reading/cursor';
 import { ID_PATTERN, parseListFilter } from '@/lib/reading/filters';
-import { parseSearchParams } from '@/lib/search/query';
 import { requireUser } from '@/lib/session';
 
 const filterFromSearch = (search: string) =>
@@ -54,10 +46,4 @@ export async function setSavedAction(itemId: string, saved: boolean) {
   if (!ID_PATTERN.test(itemId)) return;
   await setSaved(user.id, itemId, saved);
   refresh();
-}
-
-export async function searchAction(search: string) {
-  const user = await requireUser();
-  if (typeof search !== 'string') return [];
-  return searchItems(user.id, parseSearchParams(Object.fromEntries(new URLSearchParams(search))));
 }
