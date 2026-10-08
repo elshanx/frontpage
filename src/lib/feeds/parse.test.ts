@@ -163,6 +163,14 @@ test('keeps every item when a comment trails the root element', () => {
   assert.equal(feed.items.length, 2);
 });
 
+test('parses feeds full of HTML comments in linear time', () => {
+  const item = '<item><title>A</title><description><!-- a --> <!-- b --></description></item>\n';
+  const started = performance.now();
+  const feed = parseFeed(`<rss><channel>${item.repeat(500)}</channel></rss>`);
+  assert.equal(feed.items.length, 500);
+  assert.ok(performance.now() - started < 2_000);
+});
+
 test('strips NUL characters that Postgres rejects', () => {
   const [item] = parseFeed(
     '<rss><channel><item><title>Bad\u0000title</title><description>&lt;p&gt;x\u0000y&lt;/p&gt;</description></item></channel></rss>'

@@ -194,10 +194,13 @@ function parseRoot(root: Element | undefined, feedUrl?: string): ParsedFeed {
   throw new FeedParseError("This doesn't look like an RSS or Atom feed");
 }
 
-const TRAILING_COMMENTS = /(?:\s|<!--[\s\S]*?-->)+$/;
+const ONLY_WHITESPACE_AND_COMMENTS = /^(?:\s|<!--(?:(?!-->)[\s\S])*-->)*$/;
 
-const isTruncated = (xml: string, rootName: string) =>
-  !xml.replace(TRAILING_COMMENTS, '').toLowerCase().endsWith(`</${rootName}>`);
+const isTruncated = (xml: string, rootName: string) => {
+  const closingTag = `</${rootName}>`;
+  const end = xml.toLowerCase().lastIndexOf(closingTag);
+  return end === -1 || !ONLY_WHITESPACE_AND_COMMENTS.test(xml.slice(end + closingTag.length));
+};
 
 export function parseFeed(xml: string, feedUrl?: string): ParsedFeed {
   const text = xml.replaceAll('\u0000', '');
