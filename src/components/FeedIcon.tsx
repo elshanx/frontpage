@@ -23,6 +23,9 @@ export default function FeedIcon({ src, title }: { src: string | null; title: st
       height={16}
       loading='lazy'
       onError={() => setFailed(true)}
+      ref={(image) => {
+        if (image?.complete && image.naturalWidth === 0) setFailed(true);
+      }}
       className='size-4 shrink-0 rounded-sm'
     />
   );
