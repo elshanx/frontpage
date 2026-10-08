@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Announcer } from '@/components/Announcer';
 import GuestBanner from '@/components/GuestBanner';
+import Shortcuts from '@/components/Shortcuts';
 import Sidebar from '@/components/Sidebar';
 import SidebarShell from '@/components/SidebarShell';
 import SignOutButton from '@/components/SignOutButton';
@@ -13,6 +14,7 @@ export default async function AppLayout({ children }: LayoutProps<'/app'>) {
   return (
     <div data-reduce-motion={reduceMotion || undefined}>
       <Announcer>
+        <Shortcuts />
         {user.isAnonymous && <GuestBanner />}
         <header className='border-b border-border-subtle'>
           <div className='flex items-center justify-between gap-4 px-4 py-2'>

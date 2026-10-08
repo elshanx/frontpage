@@ -18,6 +18,7 @@ export default function SaveButton({ itemId, saved }: { itemId: string; saved: b
     <button
       type='button'
       onClick={toggle}
+      data-action='save'
       aria-pressed={optimisticSaved}
       title={label}
       className='grid size-9 place-items-center rounded-md text-text-tertiary hover:bg-bg-tertiary hover:text-text-primary aria-pressed:text-accent pointer-coarse:size-11'

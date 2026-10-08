@@ -40,6 +40,7 @@ export default function ItemRow({
       <Link
         href={`/app/item/${item.id}${search}`}
         onClick={() => setUnread(item.id, false)}
+        data-action='open'
         className={`transition-colors duration-150 hover:text-accent ${unread ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
       >
         {unread && <span className='sr-only'>Unread: </span>}
@@ -68,6 +69,7 @@ export default function ItemRow({
       <button
         type='button'
         onClick={toggle}
+        data-action='read'
         title={unread ? 'Mark as read' : 'Mark as unread'}
         className='grid size-9 place-items-center rounded-md text-text-tertiary hover:bg-bg-tertiary hover:text-text-primary pointer-coarse:size-11'
       >
@@ -107,7 +109,10 @@ export default function ItemRow({
 
   if (layout === 'cards') {
     return (
-      <li className='flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-secondary'>
+      <li
+        data-item-row
+        className='flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-secondary has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+      >
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- images come from arbitrary feed hosts
           <img
@@ -139,7 +144,10 @@ export default function ItemRow({
 
   if (layout === 'compact') {
     return (
-      <li className='border-b border-border-subtle [contain-intrinsic-size:auto_3rem] [content-visibility:auto]'>
+      <li
+        data-item-row
+        className='border-b border-border-subtle [contain-intrinsic-size:auto_3rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+      >
         <article className='flex items-center gap-3 py-1'>
           <span
             aria-hidden='true'
@@ -156,7 +164,10 @@ export default function ItemRow({
   }
 
   return (
-    <li className='border-b border-border-subtle [contain-intrinsic-size:auto_7rem] [content-visibility:auto]'>
+    <li
+      data-item-row
+      className='border-b border-border-subtle [contain-intrinsic-size:auto_7rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+    >
       <article className='flex gap-3 py-3'>
         {dot}
         <div className='min-w-0 flex-1'>
