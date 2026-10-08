@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import FeedIcon from '@/components/FeedIcon';
 import NavLink from '@/components/NavLink';
+import PageLink from '@/components/PageLink';
 import { getNavigation } from '@/lib/items';
 
 type NavFeed = Awaited<ReturnType<typeof getNavigation>>['uncategorized'][number];
@@ -24,7 +25,7 @@ function FeedLinks({ feeds, counts }: { feeds: NavFeed[]; counts: Record<string,
 }
 
 export default async function Sidebar({ userId }: { userId: string }) {
-  const { counts, categories, uncategorized, needAttention } = await getNavigation(userId);
+  const { counts, saved, categories, uncategorized, needAttention } = await getNavigation(userId);
   const groups = [
     ...categories.map(({ id, name, feeds }) => ({
       id,
@@ -42,6 +43,12 @@ export default async function Sidebar({ userId }: { userId: string }) {
       <NavLink filter={{ kind: 'all', unreadOnly: false }} count={counts.total}>
         All items
       </NavLink>
+      <div className='-mt-3 flex flex-col'>
+        <PageLink href='/app/saved' count={saved} countLabel='saved'>
+          Saved
+        </PageLink>
+        <PageLink href='/app/search'>Search</PageLink>
+      </div>
       {groups.length > 0 && (
         <ul className='flex flex-col gap-3'>
           {groups.map((group) => (

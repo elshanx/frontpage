@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import FeedIcon from '@/components/FeedIcon';
 import MarkReadOnView from '@/components/MarkReadOnView';
 import ReaderNav from '@/components/ReaderNav';
+import SaveButton from '@/components/SaveButton';
 import { getItemForUser, getNeighbors } from '@/lib/items';
 import { ID_PATTERN, filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
@@ -39,7 +40,10 @@ export default async function ReaderPage({ params, searchParams }: PageProps<'/a
       <ReaderNav from={from} newerId={newerId} olderId={olderId} label='Article navigation' />
       <article className='mt-6'>
         <header className='border-b border-border-subtle pb-4'>
-          <h1 className='font-serif text-2xl font-bold'>{item.title}</h1>
+          <div className='flex items-start justify-between gap-3'>
+            <h1 className='font-serif text-2xl font-bold'>{item.title}</h1>
+            <SaveButton itemId={item.id} saved={item.saved} />
+          </div>
           <p className='mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-text-secondary'>
             <FeedIcon src={item.iconUrl} title={item.feedTitle} />
             <span>{item.feedTitle}</span>

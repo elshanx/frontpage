@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { setReadAction } from '@/app/app/actions';
 import FeedIcon from '@/components/FeedIcon';
+import SaveButton from '@/components/SaveButton';
 import { useReadState } from '@/components/ReadState';
 import type { ListedItem } from '@/lib/items';
 import { relativeTime } from '@/lib/reading/format';
@@ -69,6 +70,7 @@ export default function ItemRow({
           )}
         </div>
         <div className='flex shrink-0 items-start gap-1'>
+          <SaveButton itemId={item.id} saved={item.saved} />
           <button
             type='button'
             onClick={toggle}

@@ -236,15 +236,16 @@ export type SavedSort = 'saved' | 'published';
 
 const SAVED_LIMIT = 500;
 
-export function listSaved(userId: string, sort: SavedSort, q: string) {
+export async function listSaved(userId: string, sort: SavedSort, q: string) {
   const query = toTsQuery(q);
   // ponytail: no pagination for saved; add a (savedAt, id) cursor if lists grow past 500.
-  return prisma.$queryRaw<ListedItem[]>`
+  const items = await prisma.$queryRaw<ListedItem[]>`
     SELECT ${listColumns} ${visibleFrom(userId)}
     WHERE st."savedAt" IS NOT NULL
     ${query ? Prisma.sql`AND i.search @@ to_tsquery('english', ${query})` : Prisma.empty}
     ORDER BY ${sort === 'published' ? Prisma.sql`i."publishedAt"` : Prisma.sql`st."savedAt"`} DESC, i.id DESC
     LIMIT ${SAVED_LIMIT}`;
+  return { items, fetchedAt: Date.now() };
 }
 
 export interface SearchResult extends ListedItem {
