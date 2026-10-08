@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { Prisma } from '@/generated/prisma/client';
 import prisma from '@/lib/db';
 import { feedHealth } from '@/lib/feeds/health';
@@ -134,7 +135,7 @@ export function savedCount(userId: string) {
   return prisma.itemState.count({ where: { userId, savedAt: { not: null } } });
 }
 
-export async function getNavigation(userId: string) {
+export const getNavigation = cache(async (userId: string) => {
   const now = new Date();
   const [categories, subscriptions, feedCounts, saved] = await Promise.all([
     prisma.category.findMany({
@@ -188,7 +189,7 @@ export async function getNavigation(userId: string) {
     uncategorized: feeds.filter(({ categoryId }) => !categoryId),
     needAttention: feeds.filter(({ health }) => health === 'error' || health === 'dead').length,
   };
-}
+});
 
 export type Navigation = Awaited<ReturnType<typeof getNavigation>>;
 
