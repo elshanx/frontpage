@@ -4,7 +4,7 @@ import prisma from '@/lib/db';
 
 const categoryFields = { id: true, name: true, position: true } as const;
 
-// ponytail: moves categories + subscriptions only; add ItemState/Preference here when Phase 3/6 create them.
+// ponytail: moves categories, subscriptions and read state; add Preference here when Phase 6 creates it.
 export default async function moveGuestData(fromUserId: string, toUserId: string) {
   await prisma.$transaction(async (tx) => {
     const [guestCategories, targetCategories, guestSubscriptions] = await Promise.all([
@@ -38,5 +38,10 @@ export default async function moveGuestData(fromUserId: string, toUserId: string
       })),
       skipDuplicates: true,
     });
+
+    await tx.$executeRaw`
+      INSERT INTO "ItemState" ("userId", "itemId", "readAt")
+      SELECT ${toUserId}, "itemId", "readAt" FROM "ItemState" WHERE "userId" = ${fromUserId}
+      ON CONFLICT DO NOTHING`;
   });
 }

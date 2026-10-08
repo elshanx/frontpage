@@ -20,6 +20,7 @@ model User {
   accounts      Account[]
   categories    Category[]
   subscriptions Subscription[]
+  states        ItemState[]
 
   @@map("user")
 }
@@ -105,9 +106,9 @@ model Feed {
 }
 
 model Item {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   feedId      String
-  feed        Feed     @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  feed        Feed        @relation(fields: [feedId], references: [id], onDelete: Cascade)
   guid        String
   url         String?
   title       String
@@ -116,7 +117,8 @@ model Item {
   contentHtml String?
   imageUrl    String?
   publishedAt DateTime
-  createdAt   DateTime @default(now())
+  createdAt   DateTime    @default(now())
+  states      ItemState[]
 
   @@unique([feedId, guid])
   @@index([feedId, publishedAt(sort: Desc)])
@@ -147,4 +149,15 @@ model Subscription {
 
   @@unique([userId, feedId])
   @@index([userId, categoryId])
+}
+
+model ItemState {
+  userId String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId String
+  item   Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  readAt DateTime?
+
+  @@id([userId, itemId])
+  @@index([itemId])
 }
