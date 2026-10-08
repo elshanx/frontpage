@@ -17,7 +17,7 @@ const LEADING_WEEKDAY = /^[a-z]+,\s*/i;
 const TRAILING_ZONE = /\b([A-Z]{3,4})$/;
 const MIN_YEAR = 1990;
 
-export function parseDate(raw: string | null | undefined): Date | null {
+export default function parseDate(raw: string | null | undefined): Date | null {
   const text = raw?.trim().replace(/\s+/g, ' ');
   if (!text) return null;
 

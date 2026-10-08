@@ -1,6 +1,6 @@
 import { lookup } from 'node:dns/promises';
 import { BlockList, isIP } from 'node:net';
-import { decodeFeed } from './decode.ts';
+import decodeFeed from './decode.ts';
 
 const TIMEOUT_MS = 10_000;
 const MAX_REDIRECTS = 5;

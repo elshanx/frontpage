@@ -2,15 +2,8 @@ import { type Element, isTag } from 'domhandler';
 import { getElementsByTagName, getInnerHTML, textContent } from 'domutils';
 import { escapeUTF8 } from 'entities';
 import { parseDocument } from 'htmlparser2';
-import { parseDate } from './dates.ts';
-import {
-  cleanText,
-  firstImage,
-  httpUrl,
-  sanitizeContent,
-  toExcerpt,
-  toPlainText,
-} from './html.ts';
+import parseDate from './dates.ts';
+import { cleanText, firstImage, httpUrl, sanitizeContent, toExcerpt, toPlainText } from './html.ts';
 
 const FULL_CONTENT_MIN_CHARS = 500;
 const TITLE_FROM_EXCERPT_CHARS = 80;

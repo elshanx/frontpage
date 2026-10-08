@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseDate } from './dates.ts';
+import parseDate from './dates.ts';
 
 const iso = (raw: string | null | undefined) => parseDate(raw)?.toISOString() ?? null;
 

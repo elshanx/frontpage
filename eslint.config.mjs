@@ -33,6 +33,13 @@ const eslintConfig = [
     },
   },
   {
+    name: 'project/hostile-input-fixtures',
+    files: ['**/*.test.ts'],
+    rules: {
+      'no-script-url': 'off',
+    },
+  },
+  {
     name: 'project/typescript-components',
     rules: {
       'react/require-default-props': ['error', { functions: 'defaultArguments' }],

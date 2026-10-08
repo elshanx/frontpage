@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { decodeFeed } from './decode.ts';
+import decodeFeed from './decode.ts';
 
 const bytes = (...values: number[]) => Uint8Array.from(values);
 const ascii = (text: string) => [...Buffer.from(text, 'latin1')];

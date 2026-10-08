@@ -14,7 +14,7 @@ function declaredCharset(bytes: Uint8Array, contentType: string | null): string 
   return head.match(XML_DECLARATION_ENCODING)?.[1].toLowerCase() ?? null;
 }
 
-export function decodeFeed(bytes: Uint8Array, contentType: string | null): string {
+export default function decodeFeed(bytes: Uint8Array, contentType: string | null): string {
   const charset = byteOrderMark(bytes) ?? declaredCharset(bytes, contentType) ?? 'utf-8';
 
   if (charset === 'utf-8' || charset === 'utf8') {
