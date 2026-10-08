@@ -48,7 +48,7 @@ const isVisible = Prisma.sql`(s.id IS NOT NULL OR st."savedAt" IS NOT NULL)`;
 const isUnread = Prisma.sql`(st."readAt" IS NULL AND (st."userId" IS NOT NULL OR i."publishedAt" >= s."createdAt" - interval '14 days'))`;
 
 function scopeSql(filter: ListFilter) {
-  if (filter.kind === 'feed') return Prisma.sql`AND i."feedId" = ${filter.id}`;
+  if (filter.kind === 'feed') return Prisma.sql`AND s."feedId" = ${filter.id}`;
   if (filter.kind === 'category') {
     return filter.id
       ? Prisma.sql`AND s."categoryId" = ${filter.id}`
@@ -271,6 +271,29 @@ export function searchItems(userId: string, params: SearchParams) {
     ${params.to ? Prisma.sql`AND i."publishedAt" <= ${params.to}::timestamp` : Prisma.empty}
     ORDER BY ts_rank(i.search, q) DESC, i."publishedAt" DESC
     LIMIT ${SEARCH_LIMIT}`;
+}
+
+export function scopedFeeds(userId: string, filter: ListFilter) {
+  return prisma.$queryRaw<{ id: string; lastSuccessAt: Date | null; nextFetchAt: Date }[]>`
+    SELECT f.id, f."lastSuccessAt", f."nextFetchAt"
+    FROM "Subscription" s JOIN "Feed" f ON f.id = s."feedId"
+    WHERE s."userId" = ${userId} ${scopeSql(filter)}`;
+}
+
+const newSince = (filter: ListFilter, since: Date) =>
+  Prisma.sql`WHERE i."createdAt" > ${since}::timestamp ${filterSql(filter)}`;
+
+export async function countNewItems(userId: string, filter: ListFilter, since: Date) {
+  const [{ count }] = await prisma.$queryRaw<{ count: number }[]>`
+    SELECT count(*)::int AS count ${from(userId)} ${newSince(filter, since)}`;
+  return count;
+}
+
+export function listNewItems(userId: string, filter: ListFilter, since: Date) {
+  return prisma.$queryRaw<ListedItem[]>`
+    SELECT ${listColumns} ${from(userId)} ${newSince(filter, since)}
+    ORDER BY i."publishedAt" DESC, i.id DESC
+    LIMIT ${PAGE_SIZE}`;
 }
 
 export async function feedsToRefresh(userId: string) {
