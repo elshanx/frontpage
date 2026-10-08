@@ -8,7 +8,7 @@ import { ReadStateProvider } from '@/components/ReadState';
 import RefreshButton from '@/components/RefreshButton';
 import StarterPacks from '@/components/StarterPacks';
 import { filterLabel, lastUpdated } from '@/lib/items';
-import { getRefreshMinutes } from '@/lib/preferences';
+import { getPreferences } from '@/lib/preferences';
 import { filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
 import { subscriptionCount } from '@/lib/subscriptions';
@@ -33,10 +33,10 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
     );
   }
   const filter = parseListFilter(params);
-  const [label, freshness, refreshMinutes] = await Promise.all([
+  const [label, freshness, { refreshMinutes, layout }] = await Promise.all([
     filterLabel(user.id, filter),
     lastUpdated(user.id, filter),
-    getRefreshMinutes(user.id),
+    getPreferences(user.id),
   ]);
   const search = filterToSearch(filter);
   const views = [

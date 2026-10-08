@@ -44,8 +44,8 @@ export default async function moveGuestData(fromUserId: string, toUserId: string
       ON CONFLICT DO NOTHING`;
 
     await tx.$executeRaw`
-      INSERT INTO "Preference" ("userId", "refreshMinutes")
-      SELECT ${toUserId}, "refreshMinutes" FROM "Preference" WHERE "userId" = ${fromUserId}
+      INSERT INTO "Preference" ("userId", "refreshMinutes", "layout", "digestSeenAt")
+      SELECT ${toUserId}, "refreshMinutes", "layout", "digestSeenAt" FROM "Preference" WHERE "userId" = ${fromUserId}
       ON CONFLICT DO NOTHING`;
   });
 }

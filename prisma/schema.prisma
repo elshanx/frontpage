@@ -170,5 +170,7 @@ model ItemState {
 model Preference {
   userId         String @id
   user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refreshMinutes Int    @default(30)
+  refreshMinutes Int       @default(30)
+  layout         String    @default("comfortable")
+  digestSeenAt   DateTime?
 }

@@ -35,6 +35,7 @@ const eslintConfig = [
       'src/lib/manage/**/*.ts',
       'src/lib/opml/**/*.ts',
       'src/lib/search/**/*.ts',
+      'src/lib/digest/**/*.ts',
     ],
     rules: {
       'import-x/extensions': ['error', 'ignorePackages', { ts: 'always' }],
