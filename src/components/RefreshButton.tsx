@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { refreshAction } from '@/app/app/actions';
+import { useAnnounce } from '@/components/Announcer';
 import { relativeTime } from '@/lib/reading/format';
 
 const fullDate = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -21,6 +22,11 @@ export default function RefreshButton({
 }) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState('');
+  const announce = useAnnounce();
+  const report = (text: string) => {
+    setMessage(text);
+    announce(text);
+  };
 
   const refreshFeeds = () => {
     if (isPending) return;
@@ -28,14 +34,14 @@ export default function RefreshButton({
     startTransition(async () => {
       try {
         const { feeds, newItems } = await refreshAction(search);
-        setMessage(
+        report(
           newItems
             ? `Refreshed ${plural(feeds, 'feed')} · ${plural(newItems, 'new item')}`
             : 'Already up to date'
         );
         if (newItems) window.dispatchEvent(new Event(REFRESHED_EVENT));
       } catch {
-        setMessage("We couldn't refresh. Try again.");
+        report("We couldn't refresh. Try again.");
       }
     });
   };
@@ -69,9 +75,7 @@ export default function RefreshButton({
         </svg>
         {isPending ? 'Refreshing…' : 'Refresh'}
       </button>
-      <span role='status' className='text-text-secondary'>
-        {message}
-      </span>
+      <span className='text-text-secondary'>{message}</span>
     </div>
   );
 }

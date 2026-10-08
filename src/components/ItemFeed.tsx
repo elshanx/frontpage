@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import { checkNewItems, loadItems, loadNewItems } from '@/app/app/actions';
+import { useAnnounce } from '@/components/Announcer';
 import ItemRow from '@/components/ItemRow';
 import { REFRESHED_EVENT } from '@/components/RefreshButton';
 import type { ListedItem } from '@/lib/items';
@@ -34,7 +35,7 @@ export default function ItemFeed({
   const lastCheck = useRef(initial.fetchedAt);
   const heightBeforeInsert = useRef<number | null>(null);
   const [newCount, setNewCount] = useState(0);
-  const [announcement, setAnnouncement] = useState('');
+  const announce = useAnnounce();
 
   const showNew = async () => {
     const page = await loadNewItems(search, since.current);
@@ -46,7 +47,7 @@ export default function ItemFeed({
       const seen = new Set(current.map(({ id }) => id));
       return [...page.items.filter(({ id }) => !seen.has(id)), ...current].sort(newestFirst);
     });
-    setAnnouncement(`${page.items.length} new ${page.items.length === 1 ? 'item' : 'items'} added`);
+    announce(`${page.items.length} new ${page.items.length === 1 ? 'item' : 'items'} added`);
   };
 
   useLayoutEffect(() => {
@@ -60,7 +61,9 @@ export default function ItemFeed({
     const check = async () => {
       if (document.hidden) return;
       lastCheck.current = Date.now();
-      setNewCount(await checkNewItems(search, since.current));
+      const count = await checkNewItems(search, since.current);
+      setNewCount(count);
+      if (count) announce(`${count} new ${count === 1 ? 'item' : 'items'} available`);
     };
     const onVisible = () => {
       if (!document.hidden && Date.now() - lastCheck.current >= FOCUS_CHECK_MS) check();
@@ -109,7 +112,7 @@ export default function ItemFeed({
 
   return (
     <>
-      <div role='status' className='sticky top-0 z-10 flex justify-center'>
+      <div className='sticky top-0 z-10 flex justify-center'>
         {newCount > 0 && (
           <button
             type='button'
@@ -119,7 +122,6 @@ export default function ItemFeed({
             Show {newCount} new {newCount === 1 ? 'item' : 'items'}
           </button>
         )}
-        <span className='sr-only'>{announcement}</span>
       </div>
       <ul
         className={

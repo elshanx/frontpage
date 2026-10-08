@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { markAllReadAction, undoMarkAllReadAction } from '@/app/app/actions';
+import { useAnnounce } from '@/components/Announcer';
 import { useReadState } from '@/components/ReadState';
 
 const UNDO_MS = 5_000;
@@ -16,12 +17,17 @@ export default function MarkAllRead({ search, label }: { search: string; label: 
   const { markAllRead, restore } = useReadState();
   const [seenAt] = useState(() => Date.now());
   const [isPending, startTransition] = useTransition();
-  const [toast, setToast] = useState<Toast | null>(null);
+  const [toast, setShownToast] = useState<Toast | null>(null);
+  const announce = useAnnounce();
+  const setToast = (next: Toast | null) => {
+    setShownToast(next);
+    if (next) announce(next.message);
+  };
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (!toast || paused) return undefined;
-    const timer = setTimeout(() => setToast(null), UNDO_MS);
+    const timer = setTimeout(() => setShownToast(null), UNDO_MS);
     return () => clearTimeout(timer);
   }, [toast, paused]);
 
@@ -62,10 +68,7 @@ export default function MarkAllRead({ search, label }: { search: string; label: 
       >
         {label}
       </button>
-      <div
-        aria-live='polite'
-        className='pointer-events-none fixed inset-x-4 bottom-4 z-40 flex justify-center'
-      >
+      <div className='pointer-events-none fixed inset-x-4 bottom-4 z-40 flex justify-center'>
         {toast && (
           <p
             onMouseEnter={() => setPaused(true)}
