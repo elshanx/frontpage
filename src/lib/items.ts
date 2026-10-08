@@ -5,6 +5,8 @@ import { feedHealth } from '@/lib/feeds/health';
 import rollUpCounts from '@/lib/reading/counts';
 import { type Cursor, encodeCursor } from '@/lib/reading/cursor';
 import type { ListFilter } from '@/lib/reading/filters';
+import { toTsQuery, type SearchParams } from '@/lib/search/query';
+import { MARK_END, MARK_START } from '@/lib/search/highlight';
 
 const PAGE_SIZE = 50;
 
@@ -20,6 +22,7 @@ export interface ListedItem {
   feedTitle: string;
   iconUrl: string | null;
   unread: boolean;
+  saved: boolean;
 }
 
 export interface ReaderItem extends ListedItem {
@@ -33,6 +36,14 @@ const from = (userId: string) => Prisma.sql`
   JOIN "Subscription" s ON s."feedId" = i."feedId" AND s."userId" = ${userId}
   JOIN "Feed" f ON f.id = i."feedId"
   LEFT JOIN "ItemState" st ON st."itemId" = i.id AND st."userId" = ${userId}`;
+
+const visibleFrom = (userId: string) => Prisma.sql`
+  FROM "Item" i
+  LEFT JOIN "Subscription" s ON s."feedId" = i."feedId" AND s."userId" = ${userId}
+  JOIN "Feed" f ON f.id = i."feedId"
+  LEFT JOIN "ItemState" st ON st."itemId" = i.id AND st."userId" = ${userId}`;
+
+const isVisible = Prisma.sql`(s.id IS NOT NULL OR st."savedAt" IS NOT NULL)`;
 
 const isUnread = Prisma.sql`(st."readAt" IS NULL AND (st."userId" IS NOT NULL OR i."publishedAt" >= s."createdAt" - interval '14 days'))`;
 
@@ -52,7 +63,8 @@ const filterSql = (filter: ListFilter) =>
 const listColumns = Prisma.sql`
   i.id, i.title, i.url, i.excerpt, i."publishedAt", i."imageUrl",
   (i."contentHtml" IS NOT NULL) AS "hasContent", i."feedId",
-  COALESCE(s.title, f.title) AS "feedTitle", f."iconUrl", ${isUnread} AS unread`;
+  COALESCE(s.title, f.title) AS "feedTitle", f."iconUrl", ${isUnread} AS unread,
+  (st."savedAt" IS NOT NULL) AS saved`;
 
 const position = ({ publishedAt, id }: Cursor) =>
   Prisma.sql`(${publishedAt}::timestamp, ${id}::text)`;
@@ -75,8 +87,8 @@ export async function listItems(userId: string, filter: ListFilter, cursor: Curs
 
 export async function getItemForUser(userId: string, itemId: string): Promise<ReaderItem | null> {
   const [item] = await prisma.$queryRaw<ReaderItem[]>`
-    SELECT ${listColumns}, i.author, i."contentHtml", f."siteUrl" ${from(userId)}
-    WHERE i.id = ${itemId}`;
+    SELECT ${listColumns}, i.author, i."contentHtml", f."siteUrl" ${visibleFrom(userId)}
+    WHERE i.id = ${itemId} AND ${isVisible}`;
   return item ?? null;
 }
 
@@ -118,9 +130,13 @@ export function unreadCounts(userId: string) {
     GROUP BY i."feedId"`;
 }
 
+export function savedCount(userId: string) {
+  return prisma.itemState.count({ where: { userId, savedAt: { not: null } } });
+}
+
 export async function getNavigation(userId: string) {
   const now = new Date();
-  const [categories, subscriptions, feedCounts] = await Promise.all([
+  const [categories, subscriptions, feedCounts, saved] = await Promise.all([
     prisma.category.findMany({
       where: { userId },
       orderBy: { position: 'asc' },
@@ -145,6 +161,7 @@ export async function getNavigation(userId: string) {
       },
     }),
     unreadCounts(userId),
+    savedCount(userId),
   ]);
 
   const feeds = subscriptions
@@ -163,6 +180,7 @@ export async function getNavigation(userId: string) {
 
   return {
     counts,
+    saved,
     categories: categories.map((category) => ({
       ...category,
       feeds: feeds.filter(({ categoryId }) => categoryId === category.id),
@@ -200,6 +218,58 @@ export async function undoMarkAllRead(userId: string, markedAt: Date) {
     WHERE "userId" = ${userId} AND "readAt" = ${markedAt}::timestamp
     RETURNING "itemId"`;
   return rows.map(({ itemId }) => itemId);
+}
+
+export function setSaved(userId: string, itemId: string, saved: boolean) {
+  const now = new Date();
+  return prisma.$executeRaw`
+    INSERT INTO "ItemState" ("userId", "itemId", "readAt", "savedAt")
+    SELECT ${userId}, i.id,
+      CASE WHEN ${isUnread} THEN NULL ELSE COALESCE(st."readAt", ${now}::timestamp) END,
+      ${saved ? now : null}::timestamp
+    ${visibleFrom(userId)}
+    WHERE i.id = ${itemId} AND ${isVisible}
+    ON CONFLICT ("userId", "itemId") DO UPDATE SET "savedAt" = EXCLUDED."savedAt"`;
+}
+
+export type SavedSort = 'saved' | 'published';
+
+const SAVED_LIMIT = 500;
+
+export function listSaved(userId: string, sort: SavedSort, q: string) {
+  const query = toTsQuery(q);
+  // ponytail: no pagination for saved; add a (savedAt, id) cursor if lists grow past 500.
+  return prisma.$queryRaw<ListedItem[]>`
+    SELECT ${listColumns} ${visibleFrom(userId)}
+    WHERE st."savedAt" IS NOT NULL
+    ${query ? Prisma.sql`AND i.search @@ to_tsquery('english', ${query})` : Prisma.empty}
+    ORDER BY ${sort === 'published' ? Prisma.sql`i."publishedAt"` : Prisma.sql`st."savedAt"`} DESC, i.id DESC
+    LIMIT ${SAVED_LIMIT}`;
+}
+
+export interface SearchResult extends ListedItem {
+  titleHighlight: string;
+  excerptHighlight: string;
+}
+
+const SEARCH_LIMIT = 50;
+const HEADLINE = `StartSel=${MARK_START}, StopSel=${MARK_END}`;
+
+export function searchItems(userId: string, params: SearchParams) {
+  const query = toTsQuery(params.q);
+  if (!query) return Promise.resolve([]);
+  return prisma.$queryRaw<SearchResult[]>`
+    SELECT ${listColumns},
+      ts_headline('english', i.title, q, ${`${HEADLINE}, HighlightAll=true`}) AS "titleHighlight",
+      ts_headline('english', i.excerpt, q, ${`${HEADLINE}, MaxFragments=2, MaxWords=30, MinWords=10`}) AS "excerptHighlight"
+    ${from(userId)}, to_tsquery('english', ${query}) q
+    WHERE i.search @@ q
+    ${params.feedId ? Prisma.sql`AND i."feedId" = ${params.feedId}` : Prisma.empty}
+    ${params.categoryId ? Prisma.sql`AND s."categoryId" = ${params.categoryId}` : Prisma.empty}
+    ${params.from ? Prisma.sql`AND i."publishedAt" >= ${params.from}::timestamp` : Prisma.empty}
+    ${params.to ? Prisma.sql`AND i."publishedAt" <= ${params.to}::timestamp` : Prisma.empty}
+    ORDER BY ts_rank(i.search, q) DESC, i."publishedAt" DESC
+    LIMIT ${SEARCH_LIMIT}`;
 }
 
 export async function feedsToRefresh(userId: string) {
