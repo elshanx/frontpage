@@ -257,8 +257,8 @@ _your notes_
 ## Running Locally
 
 ```bash
-git clone https://github.com/elshanx/fem
-cd fem/RSS-feed-reader
+git clone https://github.com/elshanx/frontpage
+cd frontpage
 pnpm install
 cp .env.example .env   # fill in DATABASE_URL and BETTER_AUTH_SECRET at minimum
 pnpm db:migrate
@@ -282,7 +282,7 @@ Checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 ### Deploying
 
 1. Create a Neon Postgres database and copy its pooled connection string.
-2. Import the repo in Vercel with root directory `RSS-feed-reader`. Set the variables above. `BETTER_AUTH_URL` is the production URL.
+2. Import the repo in Vercel. Set the variables above. `BETTER_AUTH_URL` is the production URL.
 3. Deploy. The `vercel-build` script runs `prisma migrate deploy && next build`, and `vercel.json` schedules the daily maintenance cron.
 4. Run Lighthouse on the live URL and fill in the scores above.
 

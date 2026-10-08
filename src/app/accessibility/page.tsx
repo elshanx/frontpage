@@ -41,7 +41,7 @@ export default function AccessibilityPage() {
       <p className='mt-3'>
         If something gets in your way, please{' '}
         <a
-          href='https://github.com/elshanx/fem/issues'
+          href='https://github.com/elshanx/frontpage/issues'
           className='font-semibold text-accent underline'
         >
           open an issue
