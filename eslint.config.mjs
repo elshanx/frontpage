@@ -46,6 +46,12 @@ const eslintConfig = [
     },
   },
   {
+    name: 'project/server-logs',
+    rules: {
+      'no-console': ['warn', { allow: ['error', 'warn'] }],
+    },
+  },
+  {
     name: 'project/placeholder-links',
     rules: {
       'jsx-a11y/anchor-is-valid': ['error', { aspects: ['noHref', 'preferButton'] }],
