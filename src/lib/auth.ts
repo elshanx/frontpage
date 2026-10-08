@@ -6,6 +6,7 @@ import { anonymous } from 'better-auth/plugins';
 import prisma from '@/lib/db';
 import sendEmail from '@/lib/email';
 import seedGuest from '@/lib/guest';
+import moveGuestData from '@/lib/guest-link';
 
 const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -31,7 +32,14 @@ const auth = betterAuth({
       '/request-password-reset': { window: 300, max: 3 },
     },
   },
-  plugins: [anonymous(), nextCookies()],
+  plugins: [
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        await moveGuestData(anonymousUser.user.id, newUser.user.id);
+      },
+    }),
+    nextCookies(),
+  ],
   databaseHooks: {
     user: {
       create: {
