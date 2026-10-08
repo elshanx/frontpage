@@ -15,6 +15,7 @@ export default async function saveSettingsAction(formData: FormData) {
     readerSize: parseReaderRange('readerSize', formData.get('readerSize')),
     readerLeading: parseReaderRange('readerLeading', formData.get('readerLeading')),
     readerMeasure: parseReaderRange('readerMeasure', formData.get('readerMeasure')),
+    reduceMotion: formData.get('reduceMotion') === 'on',
   });
   redirect('/app/settings?saved=1');
 }

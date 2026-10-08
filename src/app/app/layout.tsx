@@ -3,12 +3,14 @@ import GuestBanner from '@/components/GuestBanner';
 import Sidebar from '@/components/Sidebar';
 import SidebarShell from '@/components/SidebarShell';
 import SignOutButton from '@/components/SignOutButton';
+import { getPreferences } from '@/lib/preferences';
 import { requireUser } from '@/lib/session';
 
 export default async function AppLayout({ children }: LayoutProps<'/app'>) {
   const user = await requireUser();
+  const { reduceMotion } = await getPreferences(user.id);
   return (
-    <>
+    <div data-reduce-motion={reduceMotion || undefined}>
       {user.isAnonymous && <GuestBanner />}
       <header className='border-b border-border-subtle'>
         <div className='flex items-center justify-between gap-4 px-4 py-2'>
@@ -36,6 +38,6 @@ export default async function AppLayout({ children }: LayoutProps<'/app'>) {
         </SidebarShell>
         <div className='min-w-0 flex-1'>{children}</div>
       </div>
-    </>
+    </div>
   );
 }

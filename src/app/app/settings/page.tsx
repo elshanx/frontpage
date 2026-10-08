@@ -53,6 +53,19 @@ export default async function SettingsPage({ searchParams }: PageProps<'/app/set
             readerMeasure: prefs.readerMeasure,
           }}
         />
+        <label
+          htmlFor='reduceMotion'
+          className='flex min-h-11 items-center gap-3 rounded-md px-2 hover:bg-bg-tertiary'
+        >
+          <input
+            id='reduceMotion'
+            type='checkbox'
+            name='reduceMotion'
+            defaultChecked={prefs.reduceMotion}
+            className='size-4 accent-accent'
+          />
+          Reduce motion (stop spinners and transitions)
+        </label>
         <div className='flex items-center gap-3'>
           <button
             type='submit'
