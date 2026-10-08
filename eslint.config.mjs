@@ -27,7 +27,7 @@ const eslintConfig = [
   },
   {
     name: 'project/node-test-modules',
-    files: ['**/*.test.ts', 'src/lib/feeds/**/*.ts'],
+    files: ['**/*.test.ts', 'src/lib/feeds/**/*.ts', 'src/lib/accounts/**/*.ts'],
     rules: {
       'import-x/extensions': ['error', 'ignorePackages', { ts: 'always' }],
     },
