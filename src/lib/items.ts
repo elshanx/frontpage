@@ -184,20 +184,22 @@ export function setRead(userId: string, itemId: string, read: boolean) {
     ON CONFLICT ("userId", "itemId") DO UPDATE SET "readAt" = EXCLUDED."readAt"`;
 }
 
-export async function markAllRead(userId: string, filter: ListFilter) {
+export async function markAllRead(userId: string, filter: ListFilter, seenAt: Date) {
   const markedAt = new Date();
   const count = await prisma.$executeRaw`
     INSERT INTO "ItemState" ("userId", "itemId", "readAt")
     SELECT ${userId}, i.id, ${markedAt}::timestamp ${from(userId)}
-    WHERE ${isUnread} ${scopeSql(filter)}
+    WHERE ${isUnread} ${scopeSql(filter)} AND i."createdAt" <= ${seenAt}::timestamp
     ON CONFLICT ("userId", "itemId") DO UPDATE SET "readAt" = EXCLUDED."readAt"`;
   return { count, markedAt };
 }
 
-export function undoMarkAllRead(userId: string, markedAt: Date) {
-  return prisma.$executeRaw`
+export async function undoMarkAllRead(userId: string, markedAt: Date) {
+  const rows = await prisma.$queryRaw<{ itemId: string }[]>`
     UPDATE "ItemState" SET "readAt" = NULL
-    WHERE "userId" = ${userId} AND "readAt" = ${markedAt}::timestamp`;
+    WHERE "userId" = ${userId} AND "readAt" = ${markedAt}::timestamp
+    RETURNING "itemId"`;
+  return rows.map(({ itemId }) => itemId);
 }
 
 export async function feedsToRefresh(userId: string) {

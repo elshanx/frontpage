@@ -6,43 +6,59 @@ import { useReadState } from '@/components/ReadState';
 
 const UNDO_MS = 5_000;
 
+interface Toast {
+  message: string;
+  markedAt?: string;
+  snapshot?: Record<string, boolean>;
+}
+
 export default function MarkAllRead({ search, label }: { search: string; label: string }) {
-  const { setAllRead } = useReadState();
+  const { markAllRead, restore } = useReadState();
+  const [seenAt] = useState(() => Date.now());
   const [isPending, startTransition] = useTransition();
-  const [toast, setToast] = useState<{ message: string; markedAt?: string } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (!toast) return undefined;
+    if (!toast || paused) return undefined;
     const timer = setTimeout(() => setToast(null), UNDO_MS);
     return () => clearTimeout(timer);
-  }, [toast]);
+  }, [toast, paused]);
 
-  const markAll = () =>
+  const markAll = () => {
+    if (isPending) return;
+    const snapshot = markAllRead();
     startTransition(async () => {
-      setAllRead(true);
-      const { count, markedAt } = await markAllReadAction(search);
+      const { count, markedAt } = await markAllReadAction(search, seenAt);
       setToast(
         count
-          ? { message: `Marked ${count} ${count === 1 ? 'item' : 'items'} read`, markedAt }
+          ? {
+              message: `Marked ${count} ${count === 1 ? 'item' : 'items'} read`,
+              markedAt,
+              snapshot,
+            }
           : { message: 'Nothing left to mark read' }
       );
     });
+  };
 
-  const undo = (markedAt: string) =>
+  const undo = ({ markedAt, snapshot }: Toast) => {
+    if (!markedAt) return;
+    setToast(null);
+    setPaused(false);
     startTransition(async () => {
-      setToast(null);
-      await undoMarkAllReadAction(markedAt);
-      setAllRead(false);
+      restore(snapshot ?? {}, await undoMarkAllReadAction(markedAt));
       setToast({ message: 'Restored unread items' });
     });
+  };
 
   return (
     <>
       <button
         type='button'
         onClick={markAll}
-        disabled={isPending}
-        className='min-h-11 rounded-md border border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg-tertiary hover:text-text-primary disabled:opacity-60'
+        aria-disabled={isPending}
+        className='min-h-11 rounded-md border border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg-tertiary hover:text-text-primary aria-disabled:opacity-60'
       >
         {label}
       </button>
@@ -51,12 +67,18 @@ export default function MarkAllRead({ search, label }: { search: string; label: 
         className='pointer-events-none fixed inset-x-4 bottom-4 z-40 flex justify-center'
       >
         {toast && (
-          <p className='pointer-events-auto flex items-center gap-3 rounded-lg bg-text-primary px-4 py-2 text-sm text-bg-primary shadow-lg'>
+          <p
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocus={() => setPaused(true)}
+            onBlur={() => setPaused(false)}
+            className='pointer-events-auto flex items-center gap-3 rounded-lg bg-text-primary px-4 py-2 text-sm text-bg-primary shadow-lg'
+          >
             {toast.message}
             {toast.markedAt && (
               <button
                 type='button'
-                onClick={() => undo(toast.markedAt as string)}
+                onClick={() => undo(toast)}
                 className='min-h-9 rounded-md px-2 font-semibold underline'
               >
                 Undo

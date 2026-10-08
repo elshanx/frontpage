@@ -5,7 +5,8 @@ import { type ReactNode, createContext, use, useMemo, useState } from 'react';
 interface ReadState {
   isUnread: (id: string, serverUnread: boolean) => boolean;
   setUnread: (id: string, unread: boolean) => void;
-  setAllRead: (allRead: boolean) => void;
+  markAllRead: () => Record<string, boolean>;
+  restore: (snapshot: Record<string, boolean>, unreadIds: string[]) => void;
 }
 
 const ReadStateContext = createContext<ReadState | null>(null);
@@ -18,9 +19,14 @@ export function ReadStateProvider({ children }: { children: ReactNode }) {
     () => ({
       isUnread: (id, serverUnread) => overrides[id] ?? (allRead ? false : serverUnread),
       setUnread: (id, unread) => setOverrides((current) => ({ ...current, [id]: unread })),
-      setAllRead: (next) => {
+      markAllRead: () => {
         setOverrides({});
-        setAllReadState(next);
+        setAllReadState(true);
+        return overrides;
+      },
+      restore: (snapshot, unreadIds) => {
+        setAllReadState(false);
+        setOverrides({ ...snapshot, ...Object.fromEntries(unreadIds.map((id) => [id, true])) });
       },
     }),
     [overrides, allRead]

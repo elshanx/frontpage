@@ -23,9 +23,11 @@ export async function setReadAction(itemId: string, read: boolean) {
   refresh();
 }
 
-export async function markAllReadAction(search: string) {
+export async function markAllReadAction(search: string, seenAt: number) {
   const user = await requireUser();
-  const { count, markedAt } = await markAllRead(user.id, filterFromSearch(search));
+  const seen = new Date(seenAt);
+  if (typeof search !== 'string' || Number.isNaN(seen.getTime())) return { count: 0, markedAt: '' };
+  const { count, markedAt } = await markAllRead(user.id, filterFromSearch(search), seen);
   refresh();
   return { count, markedAt: markedAt.toISOString() };
 }
@@ -33,7 +35,8 @@ export async function markAllReadAction(search: string) {
 export async function undoMarkAllReadAction(markedAt: string) {
   const user = await requireUser();
   const date = new Date(markedAt);
-  if (Number.isNaN(date.getTime())) return;
-  await undoMarkAllRead(user.id, date);
+  if (Number.isNaN(date.getTime())) return [];
+  const itemIds = await undoMarkAllRead(user.id, date);
   refresh();
+  return itemIds;
 }
