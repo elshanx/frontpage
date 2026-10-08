@@ -274,3 +274,6 @@ export async function subscribeStarterPack(userId: string, name: string, positio
   });
   return feeds.map(({ id }) => id);
 }
+
+export const subscriptionCount = (userId: string) =>
+  prisma.subscription.count({ where: { userId } });

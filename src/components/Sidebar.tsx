@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import FeedIcon from '@/components/FeedIcon';
 import NavLink from '@/components/NavLink';
 import { getNavigation } from '@/lib/items';
@@ -57,13 +58,22 @@ export default async function Sidebar({ userId }: { userId: string }) {
         </ul>
       )}
       {needAttention > 0 && (
-        <p className='flex items-center gap-2 px-2 text-xs text-warning'>
+        <Link
+          href='/app/feeds'
+          className='flex min-h-9 items-center gap-2 rounded-md px-2 text-xs text-warning hover:bg-bg-tertiary'
+        >
           <svg aria-hidden='true' viewBox='0 0 16 16' className='size-3.5 fill-current'>
             <path d='M8 1.5 15 14.5H1L8 1.5Zm-.75 5v4h1.5v-4h-1.5Zm0 5.25v1.5h1.5v-1.5h-1.5Z' />
           </svg>
           {needAttention} {needAttention === 1 ? 'feed needs' : 'feeds need'} attention
-        </p>
+        </Link>
       )}
+      <Link
+        href='/app/feeds'
+        className='flex min-h-9 items-center rounded-md px-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary pointer-coarse:min-h-11'
+      >
+        Manage feeds
+      </Link>
     </nav>
   );
 }

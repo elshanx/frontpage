@@ -5,9 +5,11 @@ import ItemList from '@/components/ItemList';
 import ItemListSkeleton from '@/components/ItemListSkeleton';
 import MarkAllRead from '@/components/MarkAllRead';
 import { ReadStateProvider } from '@/components/ReadState';
+import StarterPacks from '@/components/StarterPacks';
 import { filterLabel } from '@/lib/items';
 import { filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
+import { subscriptionCount } from '@/lib/subscriptions';
 
 export async function generateMetadata({ searchParams }: PageProps<'/app'>): Promise<Metadata> {
   const [user, params] = await Promise.all([requireUser(), searchParams]);
@@ -18,6 +20,14 @@ export async function generateMetadata({ searchParams }: PageProps<'/app'>): Pro
 
 export default async function AppPage({ searchParams }: PageProps<'/app'>) {
   const [user, params] = await Promise.all([requireUser(), searchParams]);
+  if (!(await subscriptionCount(user.id))) {
+    return (
+      <main id='main' className='mx-auto max-w-feed px-4 py-6'>
+        <h1 className='text-xl font-semibold'>Welcome to Frontpage</h1>
+        <StarterPacks />
+      </main>
+    );
+  }
   const filter = parseListFilter(params);
   const label = await filterLabel(user.id, filter);
   const search = filterToSearch(filter);
