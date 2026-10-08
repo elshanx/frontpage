@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import saveSettingsAction from '@/app/app/settings/actions';
 import ReaderSettings from '@/components/ReaderSettings';
+import { ThemePicker } from '@/components/Theme';
 import { getPreferences } from '@/lib/preferences';
 import { requireUser } from '@/lib/session';
 
@@ -20,6 +21,9 @@ export default async function SettingsPage({ searchParams }: PageProps<'/app/set
   return (
     <main id='main' className='mx-auto max-w-feed px-4 py-6'>
       <h1 className='text-xl font-semibold'>Settings</h1>
+      <div className='mt-6'>
+        <ThemePicker />
+      </div>
       <form action={saveSettingsAction} className='mt-6 flex flex-col gap-4'>
         <fieldset className='flex flex-col gap-1'>
           <legend className='mb-2 font-semibold'>Check for new items</legend>

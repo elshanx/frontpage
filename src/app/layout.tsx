@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Atkinson_Hyperlegible, Inter } from 'next/font/google';
+import Theme from '@/components/Theme';
 import './globals.css';
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
@@ -17,7 +18,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang='en' className={`${inter.variable} ${hyperlegible.variable}`}>
+    <html
+      lang='en'
+      suppressHydrationWarning
+      className={`${inter.variable} ${hyperlegible.variable}`}
+    >
       <body>
         <a
           href='#main'
@@ -25,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         >
           Skip to content
         </a>
-        {children}
+        <Theme>{children}</Theme>
       </body>
     </html>
   );
