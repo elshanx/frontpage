@@ -7,13 +7,16 @@ import {
   listItems,
   listNewItems,
   markAllRead,
+  markItemsRead,
   scopedFeeds,
   setRead,
   setSaved,
   undoMarkAllRead,
 } from '@/lib/items';
+import { setPreferences } from '@/lib/preferences';
 import { decodeCursor } from '@/lib/reading/cursor';
 import { ID_PATTERN, parseListFilter } from '@/lib/reading/filters';
+import { parseLayout } from '@/lib/reading/layout';
 import { refreshFeeds } from '@/lib/refresh';
 import { requireUser } from '@/lib/session';
 
@@ -96,4 +99,20 @@ export async function loadNewItems(search: string, since: number) {
   const date = validDate(since);
   if (!date) return { items: [], fetchedAt };
   return { items: await listNewItems(user.id, filterFromSearch(search), date), fetchedAt };
+}
+
+export async function setLayoutAction(layout: string) {
+  const user = await requireUser();
+  await setPreferences(user.id, { layout: parseLayout(layout) });
+  refresh();
+}
+
+export async function finishDigestAction(itemIds: string[]) {
+  const user = await requireUser();
+  const ids = Array.isArray(itemIds)
+    ? itemIds.filter((id) => ID_PATTERN.test(id)).slice(0, 500)
+    : [];
+  if (ids.length) await markItemsRead(user.id, ids);
+  await setPreferences(user.id, { digestSeenAt: new Date() });
+  refresh();
 }

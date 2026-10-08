@@ -47,6 +47,7 @@ export default async function Sidebar({ userId }: { userId: string }) {
         <PageLink href='/app/saved' count={saved} countLabel='saved'>
           Saved
         </PageLink>
+        <PageLink href='/app/digest'>Digest</PageLink>
         <PageLink href='/app/search'>Search</PageLink>
       </div>
       {groups.length > 0 && (

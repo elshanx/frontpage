@@ -317,3 +317,36 @@ export async function feedsToRefresh(userId: string) {
       .map(({ id }) => id),
   };
 }
+
+export interface DigestItem extends ListedItem {
+  categoryId: string | null;
+}
+
+const DIGEST_LIMIT = 500;
+
+export function listDigestItems(userId: string, since: Date) {
+  return prisma.$queryRaw<DigestItem[]>`
+    SELECT ${listColumns}, s."categoryId" ${from(userId)}
+    WHERE ${isUnread} AND i."publishedAt" >= ${since}::timestamp
+    ORDER BY i."publishedAt" DESC
+    LIMIT ${DIGEST_LIMIT}`;
+}
+
+export async function weeklyCounts(userId: string, now: Date) {
+  const rows = await prisma.$queryRaw<{ feedId: string; count: number }[]>`
+    SELECT i."feedId", count(*)::int AS count
+    FROM "Item" i JOIN "Subscription" s ON s."feedId" = i."feedId" AND s."userId" = ${userId}
+    WHERE i."publishedAt" >= ${new Date(now.getTime() - 7 * 24 * 3_600_000)}::timestamp
+    GROUP BY i."feedId"`;
+  return Object.fromEntries(rows.map(({ feedId, count }) => [feedId, count]));
+}
+
+export function markItemsRead(userId: string, itemIds: string[]) {
+  return prisma.$executeRaw`
+    INSERT INTO "ItemState" ("userId", "itemId", "readAt")
+    SELECT ${userId}, i.id, now()
+    FROM "Item" i
+    JOIN "Subscription" s ON s."feedId" = i."feedId" AND s."userId" = ${userId}
+    WHERE i.id = ANY(${itemIds})
+    ON CONFLICT ("userId", "itemId") DO UPDATE SET "readAt" = EXCLUDED."readAt"`;
+}
