@@ -26,7 +26,7 @@ export default function FeedIcon({ src, title }: { src: string | null; title: st
       ref={(image) => {
         if (image?.complete && image.naturalWidth === 0) setFailed(true);
       }}
-      className='size-4 shrink-0 rounded-sm'
+      className='size-4 shrink-0 rounded-sm bg-white'
     />
   );
 }

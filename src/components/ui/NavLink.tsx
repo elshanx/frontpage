@@ -26,7 +26,7 @@ export default function NavLink({
     <Link
       href={`/app${filterToSearch({ ...filter, unreadOnly: current.unreadOnly })}`}
       aria-current={isCurrent ? 'page' : undefined}
-      className='flex min-h-9 items-center gap-2 rounded-md px-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary aria-[current=page]:bg-accent-subtle aria-[current=page]:font-semibold aria-[current=page]:text-text-primary pointer-coarse:min-h-11'
+      className='flex min-h-9 items-center gap-2 rounded-md px-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary aria-[current=page]:bg-accent-subtle aria-[current=page]:font-semibold aria-[current=page]:text-accent pointer-coarse:min-h-11'
     >
       {children}
       {badge && (

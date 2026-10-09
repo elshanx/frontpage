@@ -4,6 +4,24 @@ import NavLink from '@/components/ui/NavLink';
 import PageLink from '@/components/ui/PageLink';
 import { getNavigation } from '@/lib/items';
 
+const CATEGORY_COLORS = [
+  '#3b82f6',
+  '#ec4899',
+  '#f59e0b',
+  '#6366f1',
+  '#a855f7',
+  '#10b981',
+  '#ef4444',
+  '#14b8a6',
+];
+
+const categoryColor = (name: string) =>
+  CATEGORY_COLORS[
+    [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % CATEGORY_COLORS.length
+  ];
+
+const navIcon = 'size-4 shrink-0 fill-none stroke-current stroke-[1.5]';
+
 type NavFeed = Awaited<ReturnType<typeof getNavigation>>['uncategorized'][number];
 
 function FeedLinks({ feeds, counts }: { feeds: NavFeed[]; counts: Record<string, number> }) {
@@ -53,7 +71,8 @@ export default async function Sidebar({ userId }: { userId: string }) {
             <span
               aria-hidden='true'
               title={group.name}
-              className='grid size-6 place-items-center rounded-sm bg-bg-tertiary text-xs font-semibold text-text-primary'
+              className='grid size-6 place-items-center rounded-sm text-xs font-semibold text-white'
+              style={{ backgroundColor: categoryColor(group.name) }}
             >
               {group.name.charAt(0).toUpperCase()}
             </span>
@@ -66,48 +85,87 @@ export default async function Sidebar({ userId }: { userId: string }) {
         className='flex flex-col gap-4 p-3 text-sm group-data-collapsed:hidden'
       >
         <NavLink filter={{ kind: 'all', unreadOnly: false }} count={counts.total}>
+          <svg aria-hidden='true' viewBox='0 0 16 16' className={navIcon}>
+            <rect x='2.25' y='2.25' width='11.5' height='11.5' rx='2' />
+            <path d='M5 6h6M5 8.5h6M5 11h3.5' />
+          </svg>
           All items
         </NavLink>
         <div className='-mt-3 flex flex-col'>
           <PageLink href='/app/saved' count={saved} countLabel='saved'>
+            <svg aria-hidden='true' viewBox='0 0 16 16' className={navIcon}>
+              <path d='M4 2.25h8v11.5l-4-2.75-4 2.75V2.25Z' />
+            </svg>
             Saved
           </PageLink>
-          <PageLink href='/app/digest'>Digest</PageLink>
-          <PageLink href='/app/search'>Search</PageLink>
+          <div className='flex flex-col lg:hidden'>
+            <PageLink href='/app/digest'>Digest</PageLink>
+            <PageLink href='/app/search'>Search</PageLink>
+          </div>
         </div>
         {groups.length > 0 && (
-          <ul className='flex flex-col gap-3'>
-            {groups.map((group) => (
-              <li key={group.id ?? 'uncategorized'}>
-                <NavLink
-                  filter={{ kind: 'category', id: group.id, unreadOnly: false }}
-                  count={group.count}
-                >
-                  <span className='truncate font-medium text-text-primary'>{group.name}</span>
-                </NavLink>
-                <FeedLinks feeds={group.feeds} counts={counts.byFeed} />
-              </li>
-            ))}
-          </ul>
+          <section
+            aria-labelledby='categories-heading'
+            className='border-t border-border-subtle pt-4'
+          >
+            <h2
+              id='categories-heading'
+              className='mb-2 px-2 text-xs font-semibold tracking-wider text-text-tertiary uppercase'
+            >
+              Categories
+            </h2>
+            <ul className='flex flex-col gap-3'>
+              {groups.map((group) => (
+                <li key={group.id ?? 'uncategorized'}>
+                  <NavLink
+                    filter={{ kind: 'category', id: group.id, unreadOnly: false }}
+                    count={group.count}
+                  >
+                    <span
+                      aria-hidden='true'
+                      className='size-2 shrink-0 rounded-full'
+                      style={{ backgroundColor: categoryColor(group.name) }}
+                    />
+                    <span className='truncate font-medium text-text-primary'>{group.name}</span>
+                  </NavLink>
+                  <FeedLinks feeds={group.feeds} counts={counts.byFeed} />
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
-        {needAttention > 0 && (
+        <div className='flex flex-col border-t border-border-subtle pt-3'>
+          {needAttention > 0 ? (
+            <Link
+              href='/app/feeds'
+              className='flex min-h-9 items-center gap-2 rounded-md px-2 text-xs text-warning hover:bg-bg-tertiary'
+            >
+              <svg aria-hidden='true' viewBox='0 0 16 16' className='size-3.5 fill-current'>
+                <path d='M8 1.5 15 14.5H1L8 1.5Zm-.75 5v4h1.5v-4h-1.5Zm0 5.25v1.5h1.5v-1.5h-1.5Z' />
+              </svg>
+              {needAttention} {needAttention === 1 ? 'feed needs' : 'feeds need'} attention
+            </Link>
+          ) : (
+            <p className='flex min-h-9 items-center gap-2 px-2 text-xs text-text-secondary'>
+              <svg
+                aria-hidden='true'
+                viewBox='0 0 16 16'
+                className='size-3.5 fill-none stroke-success stroke-[1.5]'
+              >
+                <circle cx='8' cy='8' r='6.25' />
+                <path d='m5.5 8 1.75 1.75L10.75 6.5' />
+              </svg>
+              All feeds healthy
+            </p>
+          )}
           <Link
             href='/app/feeds'
-            className='flex min-h-9 items-center gap-2 rounded-md px-2 text-xs text-warning hover:bg-bg-tertiary'
+            className='flex min-h-9 items-center rounded-md px-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary pointer-coarse:min-h-11'
           >
-            <svg aria-hidden='true' viewBox='0 0 16 16' className='size-3.5 fill-current'>
-              <path d='M8 1.5 15 14.5H1L8 1.5Zm-.75 5v4h1.5v-4h-1.5Zm0 5.25v1.5h1.5v-1.5h-1.5Z' />
-            </svg>
-            {needAttention} {needAttention === 1 ? 'feed needs' : 'feeds need'} attention
+            Manage feeds
           </Link>
-        )}
-        <Link
-          href='/app/feeds'
-          className='flex min-h-9 items-center rounded-md px-2 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary pointer-coarse:min-h-11'
-        >
-          Manage feeds
-        </Link>
-        <PageLink href='/app/settings'>Settings</PageLink>
+          <PageLink href='/app/settings'>Settings</PageLink>
+        </div>
       </nav>
     </>
   );
