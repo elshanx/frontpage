@@ -2,8 +2,8 @@
 
 import { useId, useRef } from 'react';
 import { updateSubscriptionAction } from '@/app/app/feeds/actions';
-import { buttonClass } from '@/components/ConfirmDialog';
-import CategorySelect, { type CategoryOption } from '@/components/CategorySelect';
+import { buttonClass } from '@/components/ui/ConfirmDialog';
+import CategorySelect, { type CategoryOption } from '@/components/categories/CategorySelect';
 import type { ManagedFeed } from '@/lib/subscriptions';
 
 export default function EditFeedDialog({

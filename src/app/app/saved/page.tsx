@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import ItemRow from '@/components/ItemRow';
-import { ReadStateProvider } from '@/components/ReadState';
+import ItemRow from '@/components/items/ItemRow';
+import { ReadStateProvider } from '@/components/items/ReadState';
 import { type SavedSort, listSaved } from '@/lib/items';
 import { requireUser } from '@/lib/session';
 

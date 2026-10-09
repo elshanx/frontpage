@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { Announcer } from '@/components/Announcer';
 import CommandPalette from '@/components/CommandPalette';
-import GuestBanner from '@/components/GuestBanner';
+import GuestBanner from '@/components/auth/GuestBanner';
 import Shortcuts from '@/components/Shortcuts';
-import Sidebar from '@/components/Sidebar';
-import SidebarShell from '@/components/SidebarShell';
-import SignOutButton from '@/components/SignOutButton';
+import Sidebar from '@/components/sidebar/Sidebar';
+import SidebarShell from '@/components/sidebar/SidebarShell';
+import SignOutButton from '@/components/auth/SignOutButton';
 import { getNavigation } from '@/lib/items';
 import { getPreferences } from '@/lib/preferences';
 import { requireUser } from '@/lib/session';

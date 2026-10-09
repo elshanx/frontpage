@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import FeedIcon from '@/components/FeedIcon';
-import NavLink from '@/components/NavLink';
-import PageLink from '@/components/PageLink';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import NavLink from '@/components/ui/NavLink';
+import PageLink from '@/components/ui/PageLink';
 import { getNavigation } from '@/lib/items';
 
 type NavFeed = Awaited<ReturnType<typeof getNavigation>>['uncategorized'][number];

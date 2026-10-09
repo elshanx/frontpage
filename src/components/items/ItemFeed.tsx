@@ -3,8 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import { checkNewItems, loadItems, loadNewItems } from '@/app/app/actions';
 import { useAnnounce } from '@/components/Announcer';
-import ItemRow from '@/components/ItemRow';
-import { REFRESHED_EVENT } from '@/components/RefreshButton';
+import ItemRow from '@/components/items/ItemRow';
+import { REFRESHED_EVENT } from '@/components/feeds/RefreshButton';
 import type { ListedItem } from '@/lib/items';
 import type { Layout } from '@/lib/reading/layout';
 

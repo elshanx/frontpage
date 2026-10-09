@@ -6,8 +6,8 @@ import {
   type OpmlPreviewState,
   previewOpmlAction,
 } from '@/app/app/feeds/actions';
-import { buttonClass } from '@/components/ConfirmDialog';
-import SubmitButton from '@/components/SubmitButton';
+import { buttonClass } from '@/components/ui/ConfirmDialog';
+import SubmitButton from '@/components/ui/SubmitButton';
 import type { ImportStatus } from '@/lib/opml/plan';
 
 type ImportResult = Awaited<ReturnType<typeof importOpmlAction>>;

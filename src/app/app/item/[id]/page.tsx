@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { summarizeItemAction } from '@/app/app/actions';
-import AiPanel from '@/components/AiPanel';
-import FeedIcon from '@/components/FeedIcon';
-import MarkReadOnView from '@/components/MarkReadOnView';
-import ReaderNav from '@/components/ReaderNav';
-import SaveButton from '@/components/SaveButton';
+import AiPanel from '@/components/items/AiPanel';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import MarkReadOnView from '@/components/items/MarkReadOnView';
+import ReaderNav from '@/components/reader/ReaderNav';
+import SaveButton from '@/components/items/SaveButton';
 import { aiEnabled } from '@/lib/ai/client';
 import { getItemForUser, getNeighbors } from '@/lib/items';
 import { ID_PATTERN, filterToSearch, parseListFilter } from '@/lib/reading/filters';

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { after } from 'next/server';
 import { setTimeout } from 'node:timers/promises';
-import ItemFeed from '@/components/ItemFeed';
+import ItemFeed from '@/components/items/ItemFeed';
 import { feedsToRefresh, listItems } from '@/lib/items';
 import { type ListFilter, filterToSearch } from '@/lib/reading/filters';
 import type { Layout } from '@/lib/reading/layout';

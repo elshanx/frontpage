@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { refreshAction, setLayoutAction } from '@/app/app/actions';
 import { useAnnounce } from '@/components/Announcer';
-import { REFRESHED_EVENT } from '@/components/RefreshButton';
+import { REFRESHED_EVENT } from '@/components/feeds/RefreshButton';
 import { filterToSearch } from '@/lib/reading/filters';
 import { LAYOUTS } from '@/lib/reading/layout';
 

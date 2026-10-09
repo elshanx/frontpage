@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import saveSettingsAction from '@/app/app/settings/actions';
-import ReaderSettings from '@/components/ReaderSettings';
+import ReaderSettings from '@/components/reader/ReaderSettings';
 import { ThemePicker } from '@/components/Theme';
 import { getPreferences } from '@/lib/preferences';
 import { requireUser } from '@/lib/session';

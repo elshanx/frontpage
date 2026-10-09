@@ -102,9 +102,7 @@ export default function SidebarShell({ children }: { children: ReactNode }) {
             <span className='sr-only'>{collapsed ? 'Show sidebar' : 'Hide sidebar'}</span>
           </button>
         </div>
-        <div id='sidebar-content'>
-          {children}
-        </div>
+        <div id='sidebar-content'>{children}</div>
       </aside>
     </>
   );

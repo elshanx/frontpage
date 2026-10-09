@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SignInForm from '@/components/SignInForm';
+import SignInForm from '@/components/auth/SignInForm';
 import { safeNextPath } from '@/lib/accounts/forms';
 import { redirectSignedIn } from '@/lib/session';
 

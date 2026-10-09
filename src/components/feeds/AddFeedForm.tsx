@@ -2,9 +2,9 @@
 
 import { useActionState, useId } from 'react';
 import { type AddFeedState, addFeedAction } from '@/app/app/feeds/actions';
-import CategorySelect, { type CategoryOption } from '@/components/CategorySelect';
-import FeedIcon from '@/components/FeedIcon';
-import SubmitButton from '@/components/SubmitButton';
+import CategorySelect, { type CategoryOption } from '@/components/categories/CategorySelect';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import SubmitButton from '@/components/ui/SubmitButton';
 
 const initialState: AddFeedState = { status: 'idle' };
 

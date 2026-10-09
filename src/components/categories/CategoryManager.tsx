@@ -8,7 +8,7 @@ import {
   moveCategoryAction,
   renameCategoryAction,
 } from '@/app/app/feeds/actions';
-import ConfirmDialog, { buttonClass } from '@/components/ConfirmDialog';
+import ConfirmDialog, { buttonClass } from '@/components/ui/ConfirmDialog';
 
 interface ManagedCategory {
   id: string;

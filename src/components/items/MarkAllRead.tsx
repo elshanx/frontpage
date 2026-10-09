@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { markAllReadAction, undoMarkAllReadAction } from '@/app/app/actions';
 import { useAnnounce } from '@/components/Announcer';
-import { useReadState } from '@/components/ReadState';
+import { useReadState } from '@/components/items/ReadState';
 
 const UNDO_MS = 5_000;
 

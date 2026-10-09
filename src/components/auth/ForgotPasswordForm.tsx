@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import FormError from '@/components/FormError';
-import SubmitButton from '@/components/SubmitButton';
-import TextField from '@/components/TextField';
-import useAuthForm from '@/components/useAuthForm';
+import FormError from '@/components/ui/FormError';
+import SubmitButton from '@/components/ui/SubmitButton';
+import TextField from '@/components/ui/TextField';
+import useAuthForm from '@/components/auth/useAuthForm';
 import { emailSchema } from '@/lib/accounts/forms';
 import authClient from '@/lib/auth-client';
 

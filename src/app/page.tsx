@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import GuestButton from '@/components/GuestButton';
+import GuestButton from '@/components/auth/GuestButton';
 import { getSession } from '@/lib/session';
 
 const FEATURES = [

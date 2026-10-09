@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { setReadAction } from '@/app/app/actions';
-import FeedIcon from '@/components/FeedIcon';
-import SaveButton from '@/components/SaveButton';
-import { useReadState } from '@/components/ReadState';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import SaveButton from '@/components/items/SaveButton';
+import { useReadState } from '@/components/items/ReadState';
 import type { ListedItem } from '@/lib/items';
 import { relativeTime } from '@/lib/reading/format';
 import type { Layout } from '@/lib/reading/layout';

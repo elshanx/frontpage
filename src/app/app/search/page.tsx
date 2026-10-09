@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import FeedIcon from '@/components/FeedIcon';
-import Highlighted from '@/components/Highlighted';
-import SearchForm from '@/components/SearchForm';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import Highlighted from '@/components/items/Highlighted';
+import SearchForm from '@/components/items/SearchForm';
 import { getNavigation, searchItems } from '@/lib/items';
 import { parseSearchParams } from '@/lib/search/query';
 import { requireUser } from '@/lib/session';

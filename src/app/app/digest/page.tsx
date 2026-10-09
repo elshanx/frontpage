@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { briefDigestAction } from '@/app/app/actions';
-import AiPanel from '@/components/AiPanel';
-import DigestDone from '@/components/DigestDone';
-import ItemRow from '@/components/ItemRow';
-import { ReadStateProvider } from '@/components/ReadState';
+import AiPanel from '@/components/items/AiPanel';
+import DigestDone from '@/components/items/DigestDone';
+import ItemRow from '@/components/items/ItemRow';
+import { ReadStateProvider } from '@/components/items/ReadState';
 import { aiEnabled } from '@/lib/ai/client';
 import { findBriefing } from '@/lib/ai/briefing';
 import { loadDigest, parseDigestWindow } from '@/lib/digest-data';

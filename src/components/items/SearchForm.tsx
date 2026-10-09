@@ -10,7 +10,7 @@ import {
   useSyncExternalStore,
   useTransition,
 } from 'react';
-import type { CategoryOption } from '@/components/CategorySelect';
+import type { CategoryOption } from '@/components/categories/CategorySelect';
 
 const DEBOUNCE_MS = 200;
 const RECENT_KEY = 'frontpage:recent-searches';

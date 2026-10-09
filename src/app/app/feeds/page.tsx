@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import AddFeedForm from '@/components/AddFeedForm';
-import CategoryManager from '@/components/CategoryManager';
-import FeedRow from '@/components/FeedRow';
-import HealthBadge from '@/components/HealthBadge';
-import OpmlImport from '@/components/OpmlImport';
+import AddFeedForm from '@/components/feeds/AddFeedForm';
+import CategoryManager from '@/components/categories/CategoryManager';
+import FeedRow from '@/components/feeds/FeedRow';
+import HealthBadge from '@/components/feeds/HealthBadge';
+import OpmlImport from '@/components/feeds/OpmlImport';
 import type { FeedHealth } from '@/lib/feeds/health';
 import summarizeHealth from '@/lib/manage/health';
 import { requireUser } from '@/lib/session';

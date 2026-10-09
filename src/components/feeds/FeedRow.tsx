@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import { retryFeedAction, unsubscribeAction } from '@/app/app/feeds/actions';
-import type { CategoryOption } from '@/components/CategorySelect';
-import ConfirmDialog, { buttonClass } from '@/components/ConfirmDialog';
-import EditFeedDialog from '@/components/EditFeedDialog';
-import FeedIcon from '@/components/FeedIcon';
-import HealthBadge from '@/components/HealthBadge';
+import type { CategoryOption } from '@/components/categories/CategorySelect';
+import ConfirmDialog, { buttonClass } from '@/components/ui/ConfirmDialog';
+import EditFeedDialog from '@/components/feeds/EditFeedDialog';
+import FeedIcon from '@/components/feeds/FeedIcon';
+import HealthBadge from '@/components/feeds/HealthBadge';
 import { relativeTime } from '@/lib/reading/format';
 import type { ManagedFeed } from '@/lib/subscriptions';
 

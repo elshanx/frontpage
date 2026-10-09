@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ForgotPasswordForm from '@/components/ForgotPasswordForm';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import { redirectSignedIn } from '@/lib/session';
 
 export const metadata: Metadata = { title: 'Forgot password' };
