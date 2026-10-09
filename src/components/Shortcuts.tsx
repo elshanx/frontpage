@@ -81,8 +81,10 @@ export default function Shortcuts() {
       } else if (key === 'u') {
         click('[data-shortcut=u]');
       } else if (key === '/') {
+        const headerSearch = document.querySelector<HTMLInputElement>('#header-search');
         if (pathname === '/app/search')
           document.querySelector<HTMLInputElement>('main input')?.focus();
+        else if (headerSearch?.checkVisibility()) headerSearch.focus();
         else {
           focusSearch.current = true;
           router.push('/app/search');
