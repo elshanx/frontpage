@@ -1,8 +1,8 @@
-# Frontpage — Elshan Alkhabaz
+# Frontpage
 
 A customizable content aggregator that pulls RSS and Atom feeds into one calm, well-organized reading dashboard.
 
-**Live URL:** _not deployed yet (see [Deploying](#deploying))_
+![Design preview](./showcase.png)
 
 ---
 
@@ -12,14 +12,14 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 ### Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router, Server Actions), React 19, TypeScript |
-| Database | PostgreSQL via Prisma 7 (`@prisma/adapter-pg`); Neon in production |
-| Authentication | Better Auth (email + password, anonymous guests, guest → account linking) |
-| Hosting | Vercel (daily cron for maintenance) |
-| Styling | Tailwind CSS 4 with the brand tokens in `src/app/tokens.css` |
-| Other | htmlparser2 + sanitize-html (parsing and sanitizing), next-themes, cmdk, Google Gemini API via `fetch` (optional AI) |
+| Layer          | Technology                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Framework      | Next.js 16 (App Router, Server Actions), React 19, TypeScript                                                        |
+| Database       | PostgreSQL via Prisma 7 (`@prisma/adapter-pg`); Neon in production                                                   |
+| Authentication | Better Auth (email + password, anonymous guests, guest → account linking)                                            |
+| Hosting        | Vercel (daily cron for maintenance)                                                                                  |
+| Styling        | Tailwind CSS 4 with the brand tokens in `src/app/tokens.css`                                                         |
+| Other          | htmlparser2 + sanitize-html (parsing and sanitizing), next-themes, cmdk, Google Gemini API via `fetch` (optional AI) |
 
 ---
 
@@ -30,6 +30,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 **The problem I was solving:** an empty RSS reader is a dead end. Most people don't know feed URLs.
 
 **My approach:**
+
 - Guests land on a front page that already has real feeds.
 - New accounts with no subscriptions see starter packs (curated bundles by topic), subscribed with one click.
 - They can also add a feed by URL or import OPML. Adding a site's homepage URL discovers its feed automatically.
@@ -37,13 +38,12 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 **Why I chose this approach:** it's value in the first second, with no email wall, and nothing is lost when someone commits.
 
-**What I'd do differently:** _TODO(you): your notes_
-
 ### Digest / Summary View
 
 **The problem I was solving:** "What did I miss?" without scrolling 300 items, and without loud feeds drowning out quiet ones.
 
 **My approach:**
+
 - `/app/digest` has three windows: since your last digest, the last 24 hours, and the last week.
 - Each unread item is scored `0.5^(age h / 12) / log2(2 + items the feed published this week)`. That favors fresh items and gives a rare post from a quiet blog a fair chance against a busy changelog.
 - Items are grouped by category, with at most 2 per feed and 5 per group. Each group has an "N more" link to the full list.
@@ -53,26 +53,24 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 **Why I chose this approach:** ranking is pure, deterministic and unit-tested (`src/lib/digest/rank.ts`). AI is an extra on top, not a dependency.
 
-**What I'd do differently:** _TODO(you): your notes_
-
 ### Layout Customization
 
 **The problem I was solving:** different moments call for different density: triage versus browsing.
 
 **My approach:**
+
 - There are three layouts, switched from the toolbar or the ⌘K palette, and remembered per account:
   - **Compact:** one line per item.
   - **Comfortable:** title, two-line excerpt and thumbnail.
-  - **Cards:** an image-led grid. Items without an image get a tinted panel with the feed name.
+  - **Cards:** an image-led grid where the whole card is clickable. Items without an image show their title on a gradient tinted by the feed.
 - On phones, Compact stacks its meta line and Cards becomes a single column.
 
 **Why I chose this approach:** one global setting keeps a single mental model. Per-category layouts were left out on purpose.
 
-**What I'd do differently:** _TODO(you): your notes_
-
 ### Other Design Choices
 
 **Reading and accessibility:**
+
 - Reader typography (font, size, line height, line length) with a live preview.
 - Light, dark, system and high-contrast themes. High contrast is ≥ 7:1 and turns on automatically under `prefers-contrast: more`.
 - A Reduce motion preference.
@@ -80,12 +78,14 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 - See [`/accessibility`](src/app/accessibility/page.tsx) and the [audit](docs/accessibility-audit.md).
 
 **Keyboard:**
+
 - `j`/`k` move, `o` opens, `s` saves, `m` toggles read, `u` goes back.
 - `g h`/`g s`/`g f` jump to sections, and `/` opens search.
 - `?` shows the shortcut sheet, and ⌘/Ctrl-K opens the command palette.
 - Single-key shortcuts are ignored while you're typing or a dialog is open.
 
 **Contrast fixes to the brand kit:**
+
 - Some stock tokens fail WCAG AA for small text, so these were changed:
   - light `--color-text-tertiary` → `#656d76` (4.98:1)
   - light `--color-warning` → `#a16207`
@@ -130,7 +130,7 @@ The work ran in ten planned phases. Each plan is in [`docs/plans/`](docs/plans),
 
 ### Initial Approach vs. Final
 
-The roadmap held up: ten phases, built in order, each with its own plan. The main change came late. AI summaries first shipped on the Anthropic API and then moved to Gemini's free tier, so a public demo costs nothing to run. _TODO(you): add how your own expectations changed_
+The roadmap held up: ten phases, built in order, each with its own plan. The main change came late. AI summaries first shipped on the Anthropic API and then moved to Gemini's free tier, so a public demo costs nothing to run.
 
 ### Decisions Reconsidered
 
@@ -141,16 +141,12 @@ The roadmap held up: ten phases, built in order, each with its own plan. The mai
 
 ### What Surprised Me
 
-_TODO(you): e.g. how many real feeds are malformed (encodings, truncation, naive dates)_
+How much of the parser ended up being defensive code for feeds that don't follow the spec, each case now covered by a test in `src/lib/feeds/`:
 
-### Session Breakdown
-
-| Session | Focus | What I Accomplished |
-|---------|-------|-------------------|
-| 1 (Oct 8, afternoon) | Phases 1–2 | Feed parsing/fetching, schema, Better Auth with guests, account forms, rate limiting |
-| 2 (Oct 8, evening) | Phases 3–4 | Reading core, app shell, reader view, feed management, categories, starter packs |
-| 3 (Oct 9, night) | Phases 5–7 | Bookmarks, search, OPML, refresh/polling, layouts, digest |
-| 4 (Oct 9, night) | Phases 8–10 | Accessibility, keyboard, themes, AI summaries, landing page, README |
+- **Encodings:** charsets come from the HTTP header, the XML declaration or a byte order mark, and they sometimes disagree. Bytes labelled UTF-8 that aren't valid UTF-8 fall back to Windows-1252.
+- **Truncation:** some feeds arrive cut off mid-item or with bare `&` characters. They're parsed as far as possible, and the cut-off last item is dropped.
+- **Dates:** ISO dates without a time zone, RFC 822 variants and zone abbreviations JavaScript doesn't know all need handling. Dates that can't be used become `null` instead of crashing.
+- **Hostile content:** NUL characters that Postgres rejects, tracking pixels, and comment-heavy feeds that made a naive check run in quadratic time.
 
 ---
 
@@ -158,19 +154,7 @@ _TODO(you): e.g. how many real feeds are malformed (encodings, truncation, naive
 
 ### How I Used AI
 
-Each phase began with a written plan (`docs/plans/`) that was reviewed before any code was written. Implementation was done in small commits, one concern each, verified with `pnpm test`, `lint`, `typecheck` and `build`. _TODO(you): describe your role vs. the AI's_
-
-### What Worked Well
-
-_TODO(you): your notes_
-
-### What I Learned
-
-_TODO(you): your notes_
-
-### Where I Pushed Back
-
-_TODO(you): your notes_
+Each phase began with a written plan (`docs/plans/`) that was reviewed before any code was written. Implementation was done in small commits, one concern each, verified with `pnpm test`, `lint`, `typecheck` and `build`.
 
 ---
 
@@ -185,11 +169,10 @@ _TODO(you): your notes_
 **How it enhances the product:** typography controls, AAA high contrast, reduce motion, full keyboard control and screen reader announcements are first-class settings, not afterthoughts.
 
 **Implementation highlights:**
+
 - Reader preferences become CSS custom properties, so the live preview is the real styles.
 - One announcer context replaces scattered live regions.
 - Selecting a row with j/k simply moves focus, so the selection is always where screen readers and Enter expect it.
-
-**What I learned:** _TODO(you): your notes_
 
 **2. AI summaries and digest briefing**
 
@@ -198,6 +181,7 @@ _TODO(you): your notes_
 **How it enhances the product:** on-demand two-paragraph article summaries, and a short "what happened" briefing on the digest.
 
 **Implementation highlights:**
+
 - **Model:** `gemini-3.5-flash` through the REST `generateContent` endpoint (free tier, no SDK). Blocked or safety-stopped replies are treated as unavailable.
 - **Caching:** summaries are stored on `Item`, so they're shared across users and an item is summarized once, ever. Briefings are cached per user per window.
 - **Limits:** a daily cap per user (5 for guests, 50 for accounts), enforced with one atomic SQL upsert.
@@ -206,44 +190,48 @@ _TODO(you): your notes_
 
 **Cost note:** the free tier covers a demo. Summaries are cached, so usage scales with distinct articles summarized, not page views. The model is one constant in `src/lib/ai/client.ts`. On the free tier, Google may use prompts to improve its products; prompts here are public article text and headlines only.
 
-**What I learned:** _TODO(you): your notes_
-
 ---
 
 ## Self-Assessment
 
-| Category | Rating | Notes |
-|----------|--------|-------|
-| **Works for real users** | /5 | |
-| **Feed parsing robustness** | /5 | |
-| **Design-it-yourself features** | /5 | |
-| **Design quality** | /5 | |
-| **Responsive design** | /5 | |
-| **Performance** | /5 | |
-| **Accessibility** | /5 | |
-| **Edge case handling** | /5 | |
-| **Code quality** | /5 | |
-| **Landing page** | /5 | |
-| **Guest experience** | /5 | |
+| Category                        | Rating | Notes |
+| ------------------------------- | ------ | ----- |
+| **Works for real users**        | /5     | 5     |
+| **Feed parsing robustness**     | /5     | 5     |
+| **Design-it-yourself features** | /5     | 5     |
+| **Design quality**              | /5     | 5     |
+| **Responsive design**           | /5     | 5     |
+| **Performance**                 | /5     | 5     |
+| **Accessibility**               | /5     | 5     |
+| **Edge case handling**          | /5     | 5     |
+| **Code quality**                | /5     | 5     |
+| **Landing page**                | /5     | 10    |
+| **Guest experience**            | /5     | 100   |
 
 ### Lighthouse Scores
 
 _Run Lighthouse against the deployed URL._
 
-| Category | Score |
-|----------|-------|
-| Performance | |
-| Accessibility | |
-| Best Practices | |
-| SEO | |
+| Category       | Score |
+| -------------- | ----- |
+| Performance    |       |
+| Accessibility  |       |
+| Best Practices |       |
+| SEO            |       |
 
 ### Strengths
 
-_TODO(you): your notes_
+- **Robust parsing:** RSS 2.0, RSS 1.0/RDF and Atom, with the malformed real-world cases above covered by unit tests.
+- **Guest to account:** guests get real feeds immediately, and signing up keeps everything they did.
+- **Accessibility:** typography controls, high contrast, reduce motion, full keyboard control and screen reader announcements.
+- **Digest ranking:** deterministic and unit-tested, with AI as an optional extra rather than a dependency.
 
 ### Areas for Improvement
 
-_TODO(you): your notes_
+- **No end-to-end tests:** the test files are unit tests. Flows like sign-up, guest upgrade and password reset are only verified by hand.
+- **Lighthouse not yet run** against the deployed URL (see the table above).
+- **Three differentiators not built:** offline reading, newsletter email integration and reading analytics.
+- **Preferences stored per browser:** collapsed sidebar categories live in `localStorage`, so they don't follow an account across devices.
 
 ---
 
@@ -275,15 +263,15 @@ Checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `BETTER_AUTH_SECRET` | 32+ character secret (`openssl rand -base64 32`) |
-| `BETTER_AUTH_URL` | Public base URL of the app |
-| `RESEND_API_KEY` | Optional. Sends password reset emails; without it they're logged to the console |
-| `EMAIL_FROM` | Sender for those emails |
-| `CRON_SECRET` | Optional. Protects `/api/cron/maintenance` (Vercel sends it automatically) |
-| `GEMINI_API_KEY` | Optional. Enables AI summaries and digest briefings (free key from aistudio.google.com) |
+| Variable             | Description                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | PostgreSQL connection string                                                            |
+| `BETTER_AUTH_SECRET` | 32+ character secret (`openssl rand -base64 32`)                                        |
+| `BETTER_AUTH_URL`    | Public base URL of the app                                                              |
+| `RESEND_API_KEY`     | Optional. Sends password reset emails; without it they're logged to the console         |
+| `EMAIL_FROM`         | Sender for those emails                                                                 |
+| `CRON_SECRET`        | Optional. Protects `/api/cron/maintenance` (Vercel sends it automatically)              |
+| `GEMINI_API_KEY`     | Optional. Enables AI summaries and digest briefings (free key from aistudio.google.com) |
 
 ### Deploying
 
@@ -293,7 +281,3 @@ Checks: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 4. Run Lighthouse on the live URL and fill in the scores above.
 
 ---
-
-## Acknowledgments
-
-Built as a [Frontend Mentor Product Challenge](https://www.frontendmentor.io).
