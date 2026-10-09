@@ -8,7 +8,7 @@ import MarkAllRead from '@/components/items/MarkAllRead';
 import { ReadStateProvider } from '@/components/items/ReadState';
 import RefreshButton from '@/components/feeds/RefreshButton';
 import StarterPacks from '@/components/feeds/StarterPacks';
-import { filterLabel, lastUpdated } from '@/lib/items';
+import { filterLabel, getNavigation, lastUpdated } from '@/lib/items';
 import { getPreferences } from '@/lib/preferences';
 import { filterToSearch, parseListFilter } from '@/lib/reading/filters';
 import { requireUser } from '@/lib/session';
@@ -34,11 +34,16 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
     );
   }
   const filter = parseListFilter(params);
-  const [label, freshness, { refreshMinutes, layout }] = await Promise.all([
+  const [label, freshness, { refreshMinutes, layout }, { counts }] = await Promise.all([
     filterLabel(user.id, filter),
     lastUpdated(user.id, filter),
     getPreferences(user.id),
+    getNavigation(user.id),
   ]);
+  let unread = counts.total;
+  if (filter.kind === 'feed') unread = counts.byFeed[filter.id] ?? 0;
+  if (filter.kind === 'category')
+    unread = filter.id ? (counts.byCategory[filter.id] ?? 0) : counts.uncategorized;
   const search = filterToSearch(filter);
   const views = [
     { name: 'All', unreadOnly: false },
@@ -46,10 +51,13 @@ export default async function AppPage({ searchParams }: PageProps<'/app'>) {
   ];
 
   return (
-    <main id='main' className='mx-auto max-w-feed px-4 py-6'>
+    <main id='main' className='px-4 py-6 lg:px-7'>
       <ReadStateProvider key={search}>
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
-          <h1 className='text-xl font-semibold'>{label}</h1>
+          <h1 className='flex items-baseline gap-3 text-xl font-semibold'>
+            {label}
+            <span className='text-sm font-normal text-text-tertiary'>{unread} unread</span>
+          </h1>
           <div className='flex flex-wrap items-center gap-2'>
             <nav aria-label='Show' className='flex rounded-md border border-border p-0.5 text-sm'>
               {views.map(({ name, unreadOnly }) => (

@@ -21,6 +21,7 @@ export interface ListedItem {
   hasContent: boolean;
   feedId: string;
   feedTitle: string;
+  categoryName: string | null;
   iconUrl: string | null;
   unread: boolean;
   saved: boolean;
@@ -65,7 +66,8 @@ const filterSql = (filter: ListFilter) =>
 const listColumns = Prisma.sql`
   i.id, i.title, i.url, i.excerpt, i."publishedAt", i."imageUrl",
   (i."contentHtml" IS NOT NULL) AS "hasContent", i."feedId",
-  COALESCE(s.title, f.title) AS "feedTitle", f."iconUrl", ${isUnread} AS unread,
+  COALESCE(s.title, f.title) AS "feedTitle",
+  (SELECT c.name FROM "Category" c WHERE c.id = s."categoryId") AS "categoryName", f."iconUrl", ${isUnread} AS unread,
   (st."savedAt" IS NOT NULL) AS saved`;
 
 const position = ({ publishedAt, id }: Cursor) =>

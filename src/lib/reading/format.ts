@@ -24,3 +24,19 @@ export function badgeCount(n: number): string {
   if (n <= 0) return '';
   return n > MAX_BADGE ? `${MAX_BADGE}+` : String(n);
 }
+
+const CATEGORY_COLORS = [
+  '#3b82f6',
+  '#ec4899',
+  '#f59e0b',
+  '#6366f1',
+  '#a855f7',
+  '#10b981',
+  '#ef4444',
+  '#14b8a6',
+];
+
+export const categoryColor = (name: string) =>
+  CATEGORY_COLORS[
+    [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % CATEGORY_COLORS.length
+  ];

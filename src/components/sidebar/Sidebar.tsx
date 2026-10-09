@@ -3,22 +3,7 @@ import FeedIcon from '@/components/feeds/FeedIcon';
 import NavLink from '@/components/ui/NavLink';
 import PageLink from '@/components/ui/PageLink';
 import { getNavigation } from '@/lib/items';
-
-const CATEGORY_COLORS = [
-  '#3b82f6',
-  '#ec4899',
-  '#f59e0b',
-  '#6366f1',
-  '#a855f7',
-  '#10b981',
-  '#ef4444',
-  '#14b8a6',
-];
-
-const categoryColor = (name: string) =>
-  CATEGORY_COLORS[
-    [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % CATEGORY_COLORS.length
-  ];
+import { categoryColor } from '@/lib/reading/format';
 
 const navIcon = 'size-4 shrink-0 fill-none stroke-current stroke-[1.5]';
 

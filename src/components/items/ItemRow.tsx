@@ -6,7 +6,7 @@ import FeedIcon from '@/components/feeds/FeedIcon';
 import SaveButton from '@/components/items/SaveButton';
 import { useReadState } from '@/components/items/ReadState';
 import type { ListedItem } from '@/lib/items';
-import { relativeTime } from '@/lib/reading/format';
+import { categoryColor, relativeTime } from '@/lib/reading/format';
 import type { Layout } from '@/lib/reading/layout';
 
 const fullDate = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
@@ -64,7 +64,7 @@ export default function ItemRow({
     </p>
   );
   const actions = (
-    <div className='flex shrink-0 items-start gap-1'>
+    <div className='flex shrink-0 items-start gap-1 transition-opacity pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100'>
       <SaveButton itemId={item.id} saved={item.saved} />
       <button
         type='button'
@@ -111,7 +111,7 @@ export default function ItemRow({
     return (
       <li
         data-item-row
-        className='flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-secondary has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+        className='group flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-secondary has-[[data-action=open]:focus-visible]:bg-accent-subtle'
       >
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- images come from arbitrary feed hosts
@@ -146,7 +146,7 @@ export default function ItemRow({
     return (
       <li
         data-item-row
-        className='border-b border-border-subtle [contain-intrinsic-size:auto_3rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+        className='group border-b border-border-subtle [contain-intrinsic-size:auto_3rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
       >
         <article className='flex items-center gap-3 py-1'>
           <span
@@ -166,17 +166,28 @@ export default function ItemRow({
   return (
     <li
       data-item-row
-      className='border-b border-border-subtle [contain-intrinsic-size:auto_7rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+      className='group border-b border-border-subtle [contain-intrinsic-size:auto_7rem] [content-visibility:auto] has-[[data-action=open]:focus-visible]:bg-accent-subtle'
     >
       <article className='flex gap-3 py-3'>
         {dot}
-        <div className='min-w-0 flex-1'>
-          {heading}
+        <div className='min-w-0 flex-1 [&>p:first-child]:mt-0 [&>p:first-child]:mb-1'>
           {meta}
+          {heading}
           {item.excerpt && (
-            <p className='mt-1 line-clamp-2 text-sm text-text-secondary max-sm:hidden'>
+            <p className='mt-1 line-clamp-2 max-w-3xl text-[0.9375rem] text-text-secondary max-sm:hidden'>
               {item.excerpt}
             </p>
+          )}
+          {item.categoryName && (
+            <span
+              className='mt-2 inline-block rounded px-1.5 py-0.5 text-xs font-medium'
+              style={{
+                color: categoryColor(item.categoryName),
+                backgroundColor: `${categoryColor(item.categoryName)}22`,
+              }}
+            >
+              {item.categoryName}
+            </span>
           )}
         </div>
         {item.imageUrl && (

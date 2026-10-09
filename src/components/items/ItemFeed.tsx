@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import { checkNewItems, loadItems, loadNewItems } from '@/app/app/actions';
 import { useAnnounce } from '@/components/Announcer';
 import ItemRow from '@/components/items/ItemRow';
@@ -9,6 +9,20 @@ import type { ListedItem } from '@/lib/items';
 import type { Layout } from '@/lib/reading/layout';
 
 const FOCUS_CHECK_MS = 60_000;
+
+const dayFormat = new Intl.DateTimeFormat('en', {
+  weekday: 'long',
+  month: 'short',
+  day: 'numeric',
+});
+
+function dayLabel(date: Date, now: number) {
+  const startOfDay = (time: number) => new Date(time).setHours(0, 0, 0, 0);
+  const days = Math.round((startOfDay(now) - startOfDay(date.getTime())) / 86_400_000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return dayFormat.format(date);
+}
 
 const newestFirst = (a: ListedItem, b: ListedItem) =>
   new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime() || b.id.localeCompare(a.id);
@@ -112,13 +126,14 @@ export default function ItemFeed({
 
   return (
     <>
-      <div className='sticky top-0 z-10 flex justify-center'>
+      <div className='sticky top-0 z-10'>
         {newCount > 0 && (
           <button
             type='button'
             onClick={() => startTransition(showNew)}
-            className='mt-2 min-h-11 rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-lg hover:bg-accent-hover'
+            className='flex min-h-10 w-full items-center justify-center gap-2 border-y border-accent/20 bg-accent-subtle text-sm font-medium text-accent hover:underline'
           >
+            <span aria-hidden='true'>↑</span>
             Show {newCount} new {newCount === 1 ? 'item' : 'items'}
           </button>
         )}
@@ -130,9 +145,25 @@ export default function ItemFeed({
             : '[overflow-anchor:none]'
         }
       >
-        {items.map((item) => (
-          <ItemRow key={item.id} item={item} search={search} now={now} layout={layout} />
-        ))}
+        {items.map((item, index) => {
+          const day = dayLabel(new Date(item.publishedAt), now);
+          const startsDay =
+            layout !== 'cards' &&
+            (index === 0 || day !== dayLabel(new Date(items[index - 1].publishedAt), now));
+          return (
+            <Fragment key={item.id}>
+              {startsDay && (
+                <li
+                  suppressHydrationWarning
+                  className='pt-4 pb-1 text-xs font-semibold tracking-wider text-text-tertiary uppercase'
+                >
+                  {day}
+                </li>
+              )}
+              <ItemRow item={item} search={search} now={now} layout={layout} />
+            </Fragment>
+          );
+        })}
       </ul>
       {cursor ? (
         <div ref={sentinel} className='flex flex-col items-center gap-2 py-6'>
