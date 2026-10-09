@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import FeedIcon from '@/components/feeds/FeedIcon';
+import CategoryGroup from '@/components/sidebar/CategoryGroup';
 import NavLink from '@/components/ui/NavLink';
 import PageLink from '@/components/ui/PageLink';
 import { getNavigation } from '@/lib/items';
@@ -11,7 +12,7 @@ type NavFeed = Awaited<ReturnType<typeof getNavigation>>['uncategorized'][number
 
 function FeedLinks({ feeds, counts }: { feeds: NavFeed[]; counts: Record<string, number> }) {
   return (
-    <ul className='ml-3 border-l border-border-subtle pl-2'>
+    <ul className='ml-9 border-l border-border-subtle pl-2'>
       {feeds.map((feed) => (
         <li key={feed.id}>
           <NavLink
@@ -101,20 +102,26 @@ export default async function Sidebar({ userId }: { userId: string }) {
             </h2>
             <ul className='flex flex-col gap-3'>
               {groups.map((group) => (
-                <li key={group.id ?? 'uncategorized'}>
-                  <NavLink
-                    filter={{ kind: 'category', id: group.id, unreadOnly: false }}
-                    count={group.count}
-                  >
-                    <span
-                      aria-hidden='true'
-                      className='size-2 shrink-0 rounded-full'
-                      style={{ backgroundColor: categoryColor(group.name) }}
-                    />
-                    <span className='truncate font-medium text-text-primary'>{group.name}</span>
-                  </NavLink>
+                <CategoryGroup
+                  key={group.id ?? 'uncategorized'}
+                  storageKey={group.id ?? 'uncategorized'}
+                  name={group.name}
+                  header={
+                    <NavLink
+                      filter={{ kind: 'category', id: group.id, unreadOnly: false }}
+                      count={group.count}
+                    >
+                      <span
+                        aria-hidden='true'
+                        className='size-2 shrink-0 rounded-full'
+                        style={{ backgroundColor: categoryColor(group.name) }}
+                      />
+                      <span className='truncate font-medium text-text-primary'>{group.name}</span>
+                    </NavLink>
+                  }
+                >
                   <FeedLinks feeds={group.feeds} counts={counts.byFeed} />
-                </li>
+                </CategoryGroup>
               ))}
             </ul>
           </section>

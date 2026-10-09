@@ -41,7 +41,7 @@ export default function ItemRow({
         href={`/app/item/${item.id}${search}`}
         onClick={() => setUnread(item.id, false)}
         data-action='open'
-        className={`transition-colors duration-150 hover:text-accent ${unread ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
+        className={`transition-colors duration-150 hover:text-accent ${layout === 'cards' ? 'after:absolute after:inset-0' : ''} ${unread ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
       >
         {unread && <span className='sr-only'>Unread: </span>}
         {item.title}
@@ -111,7 +111,7 @@ export default function ItemRow({
     return (
       <li
         data-item-row
-        className='group flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-secondary has-[[data-action=open]:focus-visible]:bg-accent-subtle'
+        className='group relative flex flex-col overflow-hidden rounded-lg border hover:border-text-tertiary border-border-subtle bg-bg-secondary has-[[data-action=open]:focus-visible]:bg-accent-subtle'
       >
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- images come from arbitrary feed hosts
@@ -124,19 +124,21 @@ export default function ItemRow({
         ) : (
           <div
             aria-hidden='true'
-            className='flex aspect-video items-center justify-center gap-2 bg-accent-subtle px-4 text-sm font-semibold text-text-secondary'
+            className='flex aspect-video items-center justify-center px-6 text-center text-lg font-semibold text-balance text-text-primary/80'
+            style={{
+              background: `linear-gradient(135deg, ${categoryColor(item.feedTitle)}33, ${categoryColor(item.feedTitle)}0d)`,
+            }}
           >
-            <FeedIcon src={item.iconUrl} title={item.feedTitle} />
-            <span className='truncate'>{item.feedTitle}</span>
+            <span className='line-clamp-3'>{item.title}</span>
           </div>
         )}
         <article className='flex flex-1 flex-col gap-1 p-3'>
           <div className='flex gap-2'>
-            {dot}
+            {unread && dot}
             {heading}
           </div>
           {meta}
-          <div className='mt-auto flex justify-end pt-2'>{actions}</div>
+          <div className='relative z-10 mt-auto flex justify-end pt-2'>{actions}</div>
         </article>
       </li>
     );

@@ -54,9 +54,55 @@
   --container-content: 45rem;
   --container-feed: 60rem;
   --container-page: 80rem;
+
+  --animate-rise: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-settle: settle 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
+  --animate-slide-in: slide-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-soft-pulse: soft-pulse 2.4s ease-in-out infinite;
+  --animate-float: float 7s ease-in-out infinite;
+
+  @keyframes float {
+    50% {
+      transform: translateY(-10px) rotate(var(--float-tilt, 0deg));
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: perspective(1200px) translateY(32px) rotateX(10deg) scale(0.97);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+      background-color: var(--color-accent-subtle);
+    }
+  }
+
+  @keyframes soft-pulse {
+    50% {
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
+  }
 }
 
 @layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
   body {
     @apply bg-bg-primary font-sans text-text-primary antialiased;
   }
@@ -86,6 +132,16 @@
 }
 
 @layer components {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      :root:not([data-reduce-motion]) .reveal-on-scroll {
+        animation: rise linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+      }
+    }
+  }
+
   .reader-content {
     @apply break-words;
     max-width: var(--reader-measure, 68ch);

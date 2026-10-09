@@ -90,7 +90,10 @@ export default function SidebarShell({ children }: { children: ReactNode }) {
         data-collapsed={collapsed || undefined}
         className='group sticky top-0 hidden h-dvh w-sidebar shrink-0 overflow-y-auto border-r border-border-subtle bg-bg-secondary data-collapsed:w-auto lg:block'
       >
-        <div className='flex justify-end p-2'>
+        <div className='flex items-center justify-between p-2'>
+          <span className='px-2 text-sm font-medium text-text-secondary group-data-collapsed:hidden'>
+            Feeds
+          </span>
           <button
             type='button'
             onClick={toggle}
