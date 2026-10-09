@@ -166,7 +166,7 @@ export default function ItemFeed({
         })}
       </ul>
       {cursor ? (
-        <div ref={sentinel} className='flex flex-col items-center gap-2 py-6'>
+        <div ref={sentinel} className='flex flex-col items-center gap-2 py-6 [overflow-anchor:none]'>
           {failed && (
             <p role='alert' className='text-sm text-error'>
               We couldn&apos;t load more items.
