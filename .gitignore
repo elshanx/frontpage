@@ -3,7 +3,6 @@ spec/
 guidance/
 AGENTS.md
 CLAUDE.md
-README-template.md
 preview.jpg
 data/README.md
 
@@ -54,4 +53,3 @@ coverage/
 # Prisma client
 src/generated/
 next-env.d.ts
-README-challenge.md

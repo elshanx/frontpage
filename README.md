@@ -37,7 +37,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 **Why I chose this approach:** it's value in the first second, with no email wall, and nothing is lost when someone commits.
 
-**What I'd do differently:** _your notes_
+**What I'd do differently:** _TODO(you): your notes_
 
 ### Digest / Summary View
 
@@ -53,7 +53,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 **Why I chose this approach:** ranking is pure, deterministic and unit-tested (`src/lib/digest/rank.ts`). AI is an extra on top, not a dependency.
 
-**What I'd do differently:** _your notes_
+**What I'd do differently:** _TODO(you): your notes_
 
 ### Layout Customization
 
@@ -68,7 +68,7 @@ Frontpage turns the blogs, newsletters and changelogs you follow into one front 
 
 **Why I chose this approach:** one global setting keeps a single mental model. Per-category layouts were left out on purpose.
 
-**What I'd do differently:** _your notes_
+**What I'd do differently:** _TODO(you): your notes_
 
 ### Other Design Choices
 
@@ -130,21 +130,27 @@ The work ran in ten planned phases. Each plan is in [`docs/plans/`](docs/plans),
 
 ### Initial Approach vs. Final
 
-_your notes_
+The roadmap held up: ten phases, built in order, each with its own plan. The main change came late. AI summaries first shipped on the Anthropic API and then moved to Gemini's free tier, so a public demo costs nothing to run. _TODO(you): add how your own expectations changed_
 
 ### Decisions Reconsidered
 
-_your notes_
+- **AI provider:** Anthropic → Gemini (free tier, plain `fetch`, no SDK).
+- **Mark all read:** limited to items already seen, with undo restoring the exact rows, so new arrivals aren't marked read without being seen.
+- **Truncation check:** rewritten to run in linear time after comment-heavy feeds could freeze the server.
+- **Redirect safety:** `next` paths are now resolved the way a browser resolves them, so tab-prefixed values can't send users off-site.
 
 ### What Surprised Me
 
-_your notes_
+_TODO(you): e.g. how many real feeds are malformed (encodings, truncation, naive dates)_
 
 ### Session Breakdown
 
 | Session | Focus | What I Accomplished |
 |---------|-------|-------------------|
-| _fill in_ | | |
+| 1 (Oct 8, afternoon) | Phases 1–2 | Feed parsing/fetching, schema, Better Auth with guests, account forms, rate limiting |
+| 2 (Oct 8, evening) | Phases 3–4 | Reading core, app shell, reader view, feed management, categories, starter packs |
+| 3 (Oct 9, night) | Phases 5–7 | Bookmarks, search, OPML, refresh/polling, layouts, digest |
+| 4 (Oct 9, night) | Phases 8–10 | Accessibility, keyboard, themes, AI summaries, landing page, README |
 
 ---
 
@@ -152,19 +158,19 @@ _your notes_
 
 ### How I Used AI
 
-_your notes_
+Each phase began with a written plan (`docs/plans/`) that was reviewed before any code was written. Implementation was done in small commits, one concern each, verified with `pnpm test`, `lint`, `typecheck` and `build`. _TODO(you): describe your role vs. the AI's_
 
 ### What Worked Well
 
-_your notes_
+_TODO(you): your notes_
 
 ### What I Learned
 
-_your notes_
+_TODO(you): your notes_
 
 ### Where I Pushed Back
 
-_your notes_
+_TODO(you): your notes_
 
 ---
 
@@ -183,7 +189,7 @@ _your notes_
 - One announcer context replaces scattered live regions.
 - Selecting a row with j/k simply moves focus, so the selection is always where screen readers and Enter expect it.
 
-**What I learned:** _your notes_
+**What I learned:** _TODO(you): your notes_
 
 **2. AI summaries and digest briefing**
 
@@ -200,7 +206,7 @@ _your notes_
 
 **Cost note:** the free tier covers a demo. Summaries are cached, so usage scales with distinct articles summarized, not page views. The model is one constant in `src/lib/ai/client.ts`. On the free tier, Google may use prompts to improve its products; prompts here are public article text and headlines only.
 
-**What I learned:** _your notes_
+**What I learned:** _TODO(you): your notes_
 
 ---
 
@@ -233,11 +239,11 @@ _Run Lighthouse against the deployed URL._
 
 ### Strengths
 
-_your notes_
+_TODO(you): your notes_
 
 ### Areas for Improvement
 
-_your notes_
+_TODO(you): your notes_
 
 ---
 
