@@ -88,7 +88,7 @@ export default function SidebarShell({ children }: { children: ReactNode }) {
 
       <aside
         data-collapsed={collapsed || undefined}
-        className='sticky top-0 hidden h-dvh w-sidebar shrink-0 overflow-y-auto border-r border-border-subtle bg-bg-secondary data-collapsed:w-auto lg:block'
+        className='group sticky top-0 hidden h-dvh w-sidebar shrink-0 overflow-y-auto border-r border-border-subtle bg-bg-secondary data-collapsed:w-auto lg:block'
       >
         <div className='flex justify-end p-2'>
           <button
@@ -102,7 +102,7 @@ export default function SidebarShell({ children }: { children: ReactNode }) {
             <span className='sr-only'>{collapsed ? 'Show sidebar' : 'Hide sidebar'}</span>
           </button>
         </div>
-        <div id='sidebar-content' hidden={collapsed}>
+        <div id='sidebar-content'>
           {children}
         </div>
       </aside>
