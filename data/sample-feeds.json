@@ -167,6 +167,72 @@
           "siteUrl": "https://huggingface.co/blog",
           "description": "The latest news from Hugging Face.",
           "format": "atom"
+        },
+        {
+          "title": "OpenAI News",
+          "feedUrl": "https://openai.com/news/rss.xml",
+          "siteUrl": "https://openai.com/news",
+          "description": "News and research from OpenAI.",
+          "format": "rss2"
+        },
+        {
+          "title": "Google DeepMind",
+          "feedUrl": "https://deepmind.google/blog/rss.xml",
+          "siteUrl": "https://deepmind.google/blog/",
+          "description": "Research and news from Google DeepMind.",
+          "format": "rss2"
+        }
+      ]
+    },
+    {
+      "name": "Developer",
+      "feeds": [
+        {
+          "title": "The GitHub Blog",
+          "feedUrl": "https://github.blog/feed/",
+          "siteUrl": "https://github.blog/",
+          "description": "Updates, ideas and inspiration from GitHub.",
+          "format": "rss2"
+        },
+        {
+          "title": "The Cloudflare Blog",
+          "feedUrl": "https://blog.cloudflare.com/rss/",
+          "siteUrl": "https://blog.cloudflare.com/",
+          "description": "Engineering and product posts from Cloudflare.",
+          "format": "rss2"
+        },
+        {
+          "title": "Stack Overflow Blog",
+          "feedUrl": "https://stackoverflow.blog/feed/",
+          "siteUrl": "https://stackoverflow.blog/",
+          "description": "Essays and news for developers.",
+          "format": "rss2"
+        }
+      ]
+    },
+    {
+      "name": "Games",
+      "feeds": [
+        {
+          "title": "Polygon",
+          "feedUrl": "https://www.polygon.com/rss/index.xml/",
+          "siteUrl": "https://www.polygon.com/",
+          "description": "Gaming news, reviews and culture.",
+          "format": "rss2"
+        },
+        {
+          "title": "Rock Paper Shotgun",
+          "feedUrl": "https://www.rockpapershotgun.com/feed",
+          "siteUrl": "https://www.rockpapershotgun.com/",
+          "description": "PC gaming news and reviews.",
+          "format": "rss2"
+        },
+        {
+          "title": "Game Developer",
+          "feedUrl": "https://www.gamedeveloper.com/rss.xml",
+          "siteUrl": "https://www.gamedeveloper.com/",
+          "description": "News and postmortems for game makers.",
+          "format": "rss2"
         }
       ]
     }
